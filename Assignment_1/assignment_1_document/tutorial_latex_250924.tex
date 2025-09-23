@@ -1,0 +1,72 @@
+% ※ 명령어 사용 시 백슬래쉬(\) 쓰고 명령어 입력 %
+% ※ 명령어 사용 시 arg 받을 수도 있고 안 받을 수도 있음. %
+% ※ arg 입력 시
+% \command{arg} ... 필수 arg
+% \command[arg] ... 선택 arg
+
+%%%%%%%%%%%%%%%%%%%%% Preamble 영역(메타데이터 입력하는 곳) %%%%%%%%%%%%%%%%%%%%%
+% 문서 타입 선언 %
+% e.g. article(논문, 보고서, 과제 ; section 기반), report(학위논문, 기술 보고서 ; chapter 기반)
+% e.g. beamer(ppt슬라이드 느낌), proc(학회 논문집 느낌)
+\documentclass{article}
+
+% 패키지 import %
+\usepackage{lipsum}
+ 
+% 메타정보(제목, 저자, 작성일) 입력 %
+\title{\textbf{The First  \LaTeX  Article}}
+\author{\textbf{Author Name} \\ Department Name, University Name}
+
+%%%%%%%%%%%%%%%%%%%%% Document 영역 %%%%%%%%%%%%%%%%%%%%%
+%% 본격적인 문서 작성 시작
+\begin{document} % document라는 'environment'로의 진입 명령어
+    \maketitle % 메타정보(제목, 저자, 작성일) 섹션에서 입력한 정보들을 실제로 출력하는 명령어. 안 쓰면 출력 안 됨.
+    \begin{abstract} % document env 내 abstract라는 env로의 진입 명령어
+        \lipsum[1] % lipsum 패키지 사용 명령어. []는 lipsum이라는 명령어를 씀에 있어서 optional arg라는 의미.
+    \end{abstract} % abstract env 종료 명령어
+    \section{Hello, World!} % setion 타이틀 작성 명령어. {}는 section이라는 명령어를 씀에 있어 necessary arg라는 의미.
+    \lipsum[2-4] % lipsum 패키지 기능 사용
+
+    \begin{tabular}{ c c c } % tabular라는 env는 필수입력 arg가 있음. 
+        cell1 & cell2 & cell3 \\ 
+        cell4 & cell5 & cell6 \\ 
+        cell7 & cell8 & cell9 \\ 
+    \end{tabular}
+    
+    \begin{tabular}{|p{0.9\textwidth}|}
+        \hline \\
+        {
+
+        }
+        \\\\\hline
+    \end{tabular}
+\end{document} % document 'environment' 종료 명령어
+% ※ environment : 특정한 서식으로 문서작성할 수 있게끔 해주는 일종의 작성 '함수'. LaTeX 다운받으면 딸려오는 기본 내장 environment들이 몇몇 있다.
+%  각 패키지마다 그들만의 environment(함수)를 가지고 있음.
+%  begin과 end로 진입/종료 한다.
+%  아래처럼 사용자가 직접 자신만의 environment를 정의할 수도 있다(마치 함수처럼).
+\newenvironment{name}[numarg][optarg_default]{begin_def ~ end_def}
+% name : 만들 environment 이름
+% numarg : 해당 environemtn 실행 시 받을 argument 개수 설정(optional)
+% optarg_defaul : 이 environement가 받는 argument에 대한 default 값 설정(optional)
+% {begin_def ~ end_def} : 이 environment에서 구현할 기능들 쓰는 공간
+
+%% environment 선언 예시
+\newenvironment{boxed}[2][This is a box]
+    {\begin{center}
+    Argument 1 = #1\\
+    \begin{tabular}{|p{0.9\textwidth}|}
+    \hline\\
+    Argument 2 = #2\\
+    }
+    { 
+    \\\\\hline
+    \end{tabular} 
+    \end{center}
+    }
+% 'boxed'라는 이름의 environment 선언
+% 이 environment는 2개의 argument를 받음
+% 1번째 argument에 대한 default value는 'This is a box'라는 텍스트임
+% 본격적인 environment 정의 구간 내에서 1번째 argument를 뜻하는 게 '#1'이고 2번째 argument 뜻하는 게 '#2'임.
+% 즉 '#숫자'는 일반 텍스트가 아니니 인지하고 environment를 짜야 함.
+% 실제 environment 쓸 때는 \begin{environment명} 왈왈왈 \end{environment명} 하면 됨.
