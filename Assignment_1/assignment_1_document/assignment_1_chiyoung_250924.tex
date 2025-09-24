@@ -2,7 +2,11 @@
 % 메타 정보 입력 섹션
 \documentclass{article} % 문서 타입 정의
 
-\usepackage{amsmath, geometry} % 사용할 패키지 import
+\usepackage{amsmath, amssymb, geometry} % 사용할 패키지 import
+\usepackage{graphicx}  % 이미지 삽입을 위한 패키지
+\usepackage{caption}   % 캡션 조절용 (선택)
+\usepackage{booktabs}  % 표에서 \toprule, \midrule, \bottomrule 사용을 위한 패키지
+
 \geometry{
     a4paper,
     left=25.4mm,
@@ -33,36 +37,311 @@
     }
 {
     \noindent 1. Consider the following function and do the following (by hand): \\
-    $ f(x) = 2x_1^2 - 3x_2^2 + 4x_1x_2 + (x_3 + 2)^2 + 4x_1 $ \\
-    (a) What are the gradient and Hessian of $ f(x) $? \\
+    \[ f(\mathbf{x}) = 2x_1^2 - 3x_2^2 + 4x_1x_2 + (x_3 + 2)^2 + 4x_1 \] \\
+
+    (a) What are the gradient and Hessian of $ f(\mathbf{x}) $? \\
+
+    \[ \nabla^T f(\mathbf{x}) = \begin{bmatrix} \frac{\partial f}{\partial x_1} \\
+        \frac{\partial f}{\partial x_2} \\ \frac{\partial f}{\partial x_3} \end{bmatrix} 
+        = \begin{bmatrix} 4x_1 + 4x_2 + 4 \\ -6x_2 + 4x_1 \\ 2x_3 + 4 \end{bmatrix} \] \\
+
+    \[ \mathbf{H}(\mathbf{x}) = \nabla(\nabla^T f(\mathbf{x})) = \begin{bmatrix}
+        \frac{\partial^2 f(\mathbf{x})}{\partial x_1^2} & \frac{\partial^2 f(\mathbf{x})}{\partial x_1 \partial x_2} & \frac{\partial^2 f(\mathbf{x})}{\partial x_1 \partial x_3} \\
+        \frac{\partial^2 f(\mathbf{x})}{\partial x_2 \partial x_1} & \frac{\partial^2 f(\mathbf{x})}{\partial x_2^2} & \frac{\partial^2 f(\mathbf{x})}{\partial x_2 \partial x_3} \\
+        \frac{\partial^2 f(\mathbf{x})}{\partial x_3 \partial x_1} & \frac{\partial^2 f(\mathbf{x})}{\partial x_3 \partial x_2} & \frac{\partial^2 f(\mathbf{x})}{\partial x_3^2}
+    \end{bmatrix}
+    = \begin{bmatrix}
+        4 & 4 & 0 \\
+        4 & -6 & 0 \\
+        0 & 0 & 2
+    \end{bmatrix} \] \\
+
     (b) What are the stationary point(s) of $ f(x) $? \\
+
+    The gradient of function at the stationary point is zero.
+    Let stationary point $\mathbf{x^*}$ \\
+    \[ \rightarrow \nabla f(\mathbf{x^*}) = \mathbf{0} \] \\
+
+    \[ \rightarrow \begin{bmatrix} 4x^*_1 + 4x^*_2 + 4 \\ -6x^*_2 + 4x^*_1 \\ 2x^*_3 + 4 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix} \] \\
+    
+    \[ \rightarrow \begin{bmatrix}
+        4 & 4 & 4 \\
+        4 & -6 & 0 \\
+        0 & 0 & 2
+    \end{bmatrix} \begin{bmatrix}
+        x^*_1 \\ x^*_2 \\ x^*_3
+    \end{bmatrix} = \begin{bmatrix}
+        0 \\ 0 \\ -4
+    \end{bmatrix} \] \\
+
+    By Gaussian elimination process,
+
+    \[ \rightarrow \begin{bmatrix}
+        4 & 4 & 4 \\
+        4 & -6 & 0 \\
+        0 & 0 & 1
+    \end{bmatrix} \begin{bmatrix}
+        x^*_1 \\ x^*_2 \\ x^*_3
+    \end{bmatrix} = \begin{bmatrix}
+        8 \\ 0 \\ -2
+    \end{bmatrix} \] \\
+
+    \[ \rightarrow \begin{bmatrix}
+        1 & 1 & 0 \\
+        0 & -10 & 0 \\
+        0 & 0 & 1
+    \end{bmatrix} \begin{bmatrix}
+        x^*_1 \\ x^*_2 \\ x^*_3
+    \end{bmatrix} = \begin{bmatrix}
+        2 \\ -8 \\ -2
+    \end{bmatrix} \] \\
+
+    \[ \rightarrow \begin{bmatrix}
+        1 & 0 & 0 \\
+        0 & 1 & 0 \\
+        0 & 0 & 1
+    \end{bmatrix} \begin{bmatrix}
+        x^*_1 \\ x^*_2 \\ x^*_3
+    \end{bmatrix} = \begin{bmatrix}
+        1.2 \\ 0.8 \\ -2
+    \end{bmatrix} \] \\
+
+    \[ \therefore \mathbf{x^*} = \begin{bmatrix}
+        1.2 \\ 0.8 \\ -2
+    \end{bmatrix} \] \\
+
     (c) Is the Hessian positive-definite? \\
 
-    \noindent 2. Let f(x) = sin(x) be a function that you are interested in optimizing. Please answer the following
+    To determine if Hessian is positive-definite, the eigenvalues of Hessian should be evaluated. \\
+    Let $\mathbf{x^*}$ eigenvector and $\lambda$ eigenvalues \\
+
+    \[ \rightarrow (\mathbf{H} - \lambda \mathbf{I}) \mathbf{x^*} = \mathbf{0} \]
+
+    \[ \rightarrow \begin{bmatrix}
+        4 - \lambda & 4 & 0 \\
+        4 & -6 - \lambda & 0 \\
+        0 & 0 & 2 - \lambda
+    \end{bmatrix} \begin{bmatrix}
+        x^*_1 \\ x^*_2 \\ x^*_3
+    \end{bmatrix} = \begin{bmatrix}
+        0 \\ 0 \\ 0
+    \end{bmatrix} \] \\
+
+    \[ \rightarrow det(\mathbf{H} - \lambda \mathbf{I}) = 0 \] \\
+
+    \[ \rightarrow (\lambda - 2)(\lambda^2 + 2\lambda -40) = 0 \] \\
+
+    \noindent The product of the roots of the second-order equation is negative,
+    so the eigenvalues of the characteristic equation must have different signs. \\
+    Therefore the Hessian is indeterminate, rather than positive-definite \\
+
+    \noindent 2. Let $f(x)$ = sin($x$) be a function that you are interested in optimizing. Please answer the following
     questions completely: \\
-    (a) What are the necessary conditions for a solution to be an optimum of $ f(x) $? \\
-    (b) Using the necessary conditions obtained in (a), and considering the interval $ 0 \leq x \leq 2\pi $, obtain
-    the stationary point(s)? \\
-    (c) Confirm whether the above point(s) are inflection points, maxima, or minima. If they are maxi-
-    mum (or minimum) points, are they global maximum (or minimum) in the given interval? \\
-    (d) Plot the function $ sin(x) $ over the interval $ 0 \leq x \leq 2\pi $. Show all the stationary points on it, and
+
+    \noindent (a) What are the necessary conditions for a solution to be an optimum of $ f(x) $? \\
+
+    \noindent If \( \mathbf{x}^* \) is a local minimizer of a function \( f \) which is continuously differentiable near \( \mathbf{x}^* \), then:
+    \[
+    \nabla f(\mathbf{x}^*) = 0
+    \]
+    That is, the gradient of \( f \) at \( \mathbf{x}^* \) must be zero if \( \mathbf{x}^* \) is a local minimizer. \\
+    Proof by Contradiction, \\
+
+    Assume \( \mathbf{x}^* \) is a local minimizer of \( f(\mathbf{x}) \), but:
+    \[
+    \nabla f(\mathbf{x}^*) \neq 0
+    \]
+
+    Using a second-order Taylor expansion:
+    \[
+    f(\mathbf{x}^* + \mathbf{p}) = f(\mathbf{x}^*) + \nabla f(\mathbf{x}^*)^\top \mathbf{p} + \frac{1}{2} \mathbf{p}^\top H(f(\mathbf{x})) \mathbf{p}
+    \]
+
+    Let \( \mathbf{p} = -\gamma \nabla f(\mathbf{x}^*) \), for some small \( \gamma > 0 \). Then:
+    \[
+    f(\mathbf{x}^* + \mathbf{p}) = f(\mathbf{x}^*) - \gamma \| \nabla f(\mathbf{x}^*) \|_2^2 + \mathcal{O}(\gamma^2)
+    \]
+
+    For sufficiently small \( \gamma \), the second-order term is negligible, so:
+    \[
+    f(\mathbf{x}^* + \mathbf{p}) < f(\mathbf{x}^*)
+    \]
+
+    This contradicts the assumption that \( \mathbf{x}^* \) is a local minimizer.
+
+    \[
+    \therefore \quad \nabla f(\mathbf{x}^*) = 0
+    \] \\
+    In this case, $ f(x) $ is univariate function so $ \frac{df(x^*)}{dx} $ should be zero to be local minimum at $ x^* $.
+    The necessary condition for a local maximum follows in the same way. \\
+
+    \noindent (b) Using the necessary conditions obtained in (a), and considering the interval $ 0 \leq x \leq 2\pi $, obtain
+    the stationary point(s)? 
+    \begin{align*}
+    f(x) &= \sin x \\
+    \frac{df(x)}{dx} &= \cos x \\
+    \text{Set } \frac{df(x^*)}{dx} = 0 &\Rightarrow \cos x = 0 \\
+    &\Rightarrow x_1^* = \frac{\pi}{2}, \quad x_2^* = \frac{3\pi}{2}
+    \end{align*}
+
+    \noindent (c) Confirm whether the above point(s) are inflection points, maxima, or minima. If they are maxi-
+    mum (or minimum) points, are they global maximum (or minimum) in the given interval?
+    \begin{align*}
+    \frac{d^2 f(x)}{dx^2} &= -\sin x \\
+    \text{At } x_1^* = \frac{\pi}{2}: \frac{d^2 f(x)}{dx^2} &= -\sin\left(\frac{\pi}{2}\right) = -1 < 0 \\
+    &\Rightarrow x_1^* \text{ is a local maximum} \\
+    &f(x_1^*) = \sin\left(\frac{\pi}{2}\right) = 1 \\
+    \text{At } x_2^* = \frac{3\pi}{2}: \frac{d^2 f(x)}{dx^2} &= -\sin\left(\frac{3\pi}{2}\right) = 1 > 0 \\
+    &\Rightarrow x_2^* \text{ is a local minimum} \\
+    &f(x_2^*) = \sin\left(\frac{3\pi}{2}\right) = -1
+    \end{align*}
+
+    \begin{align*}
+    f(x_2^*) &= -1 < f(0) = 0 < f(x_1^*) = 1 \\
+    f(x_2^*) &= -1 < f(\pi) = 0 < f(x_1^*) = 1
+    \end{align*}
+
+    \[\therefore \text{At the given interval, } x^* = \frac{\pi}{2} \text{ is the global maximum, and } x^* = \frac{3\pi}{2} \text{ is the global minimum}.\]
+
+    \noindent (d) Plot the function sin($x$) over the interval $ 0 \leq x \leq 2\pi $. Show all the stationary points on it, and
     label them appropriately (maximum, minimum, or inflection). \\
-    
+    \begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{generated_image.png}
+    \caption{Problem 2.(d) - Graph of $\sin(x)$ with labeled stationary and inflection points.}
+    \label{fig1}
+    \end{figure}
+
     \noindent 3. Consider the single variable function $ f(x) = e - ax^2 $, where a is a constant. This function is often used as
     a ”radial basis function” for function approximation. Please answer the following questions completely: \\
-    (a) Is the point $ x = 0 $ a stationary point for (i) $ a > 0 $, and (ii) $ a < 0 $. What happens if $ a = 0 $? Is
-    $ x = 0 $ still a stationary point? \\
-    (b) If $ x = 0 $ is a stationary point, classify it as a minimum, maximum, or an inflection point for (i)
-    $ a > 0 $ ,(ii) $ a < 0 $, and (iii) $ a = 0 $. \\
-    (c) Prepare a plot of f(x) for $ a = 1 $, $ a = 2 $, and $ a = 3 $. Plot all three curves on the same figure. By
+
+    \noindent (a) Is the point $ x = 0 $ a stationary point for (i) $ a > 0 $, and (ii) $ a < 0 $. What happens if $ a = 0 $? Is
+    $ x = 0 $ still a stationary point?
+
+    \[
+        f'(x) = -2ax \cdot e^{-ax^2}
+        \]
+        \[
+        f'(0) = 0 \Rightarrow x = 0 \text{ is a stationary point regardless of the sign of } a.
+        \]
+        \[
+        \text{If } a = 0, \quad f(x) = 0 \quad \text{(constant function).}
+        \]
+        \[
+        \text{Since every point on a constant function is a stationary point, } x = 0 \text{ is still a stationary point.}
+    \]
+
+    \noindent (b) If $ x = 0 $ is a stationary point, classify it as a minimum, maximum, or an inflection point for (i)
+    $ a > 0 $ ,(ii) $ a < 0 $, and (iii) $ a = 0 $.
+
+    \[
+        f''(x) = -2a e^{-ax^2} + 4a^2 x^2 e^{-ax^2} = e^{-ax^2} (-2a + 4a^2 x^2)
+        \]
+        \[
+        = 4a^2 e^{-ax^2} \left(x^2 - \frac{1}{2a} \right)
+        \]
+        \[
+        f''(0) = -2a
+        \]
+        \[
+        \begin{cases}
+        < 0 & \text{if } a > 0 \Rightarrow x = 0 \text{ is a local maximum} \\
+        > 0 & \text{if } a < 0 \Rightarrow x = 0 \text{ is a local minimum} \\
+        = 0 & \text{if } a = 0 \Rightarrow x = 0 \text{ is an inflection point}
+        \end{cases}
+    \]
+
+    \noindent (c) Prepare a plot of f(x) for $ a = 1 $, $ a = 2 $, and $ a = 3 $. Plot all three curves on the same figure. By
     observing the plot, do you think $ f(x) = e - ax^2 $, $ a > 0 $ has a global minimum? If so, what is the
     value of $ x $ and $ f(x) $ at the minimum? \\
+        \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.5\textwidth]{generated_image2.png}
+        \caption{Problem 3.(c) - Graph of $e^{-ax^2}$ with three different positive a values.}
+        \label{fig2}
+        \end{figure} \\
+    I think $f(x)$ would have a global minimum, if certain finite boundary is given.
+    If given boundary is $[-b; b]$, global minimum value will be $e^{-ab^2}$. \\
 
     \noindent 4. Let $ A = \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix} $ \\ % 행렬 쓰는 법
     (a) Use the definition to determine whether $ \begin{bmatrix} -\pi \\ \pi \end{bmatrix} $ and $ \begin{bmatrix} 1 \\ 2 \end{bmatrix} $
     are eigenvectors. of $ A $ associated with $ \lambda = -1 $. \\
-    (b) Is either of the given eigenvectors of A associated with $ \lambda = 5 $? \\
-    (c) What is the point of this exercise? \\
+
+    \[
+        A \begin{bmatrix} -\pi \\ \pi \end{bmatrix}
+        = \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix}
+        \begin{bmatrix} -\pi \\ \pi \end{bmatrix}
+        = \begin{bmatrix} -3\pi + 4\pi \\ -2\pi + \pi \end{bmatrix}
+        = \begin{bmatrix} \pi \\ -\pi \end{bmatrix}
+        = -1 \cdot \begin{bmatrix} -\pi \\ \pi \end{bmatrix}
+    \]
+
+    \[
+        \text{Therefore, } \begin{bmatrix} -\pi \\ \pi \end{bmatrix} \text{ is an eigenvector of } A \text{ with eigenvalue } -1.
+    \]
+
+    \[
+        A \begin{bmatrix} 1 \\ 2 \end{bmatrix}
+        = \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix}
+        \begin{bmatrix} 1 \\ 2 \end{bmatrix}
+        = \begin{bmatrix} 11 \\ 4 \end{bmatrix}
+        = 2 \begin{bmatrix} 1 \\ 2 \end{bmatrix}
+        + \begin{bmatrix} 9 \\ 0 \end{bmatrix}
+    \]
+
+    \[
+        \therefore \begin{bmatrix} 1 \\ 2 \end{bmatrix} \text{ is not an eigenvector.}
+    \]
+
+    \noindent (b) Is either of the given eigenvectors of A associated with $ \lambda = 5 $? \\
+
+    \[
+        \begin{bmatrix}
+        3 & 4 \\
+        2 & 1 
+        \end{bmatrix}
+        \begin{bmatrix}
+        x_1 \\
+        x_2 
+        \end{bmatrix}
+        =
+        5
+        \begin{bmatrix}
+        x_1 \\
+        x_2 
+        \end{bmatrix}
+    \]
+
+    \[
+        \begin{cases}
+        3x_1 + 4x_2 = 5x_1 \Rightarrow x_1 = 2x_2 \\
+        2x_1 + x_2 = 5x_2 \Rightarrow x_1 = 2x_2 \\
+        \end{cases}
+    \]
+
+    \[
+        \begin{bmatrix}
+        x_1 \\
+        x_2 
+        \end{bmatrix}
+        =
+        x_2
+        \begin{bmatrix}
+        2 \\
+        1 
+        \end{bmatrix}
+    \]
+
+    \[
+        \therefore \lambda = 5 \text{ is eigenvalue and } 
+        \begin{bmatrix}
+            2 \\
+            1
+        \end{bmatrix} \text{ is corresponding eigenvector.}
+    \]
+
+    \noindent (c) What is the point of this exercise? \\
+    If either eigenvector or eigenvalue is known, the other one could be evaluated as well.\\
 
     \noindent 5. Use the Bisection, Fixed-Point, Newton’s, and Secant methods to find solutions accurate to within 
     $ 10^{-5} $ for the following problems: \\
@@ -75,35 +354,215 @@
     of the four entries, provide the initial value, the final values and two intermediary values during the
     convergence of the algorithm. \\
 
+    \begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{generated_image4.png}
+    \caption{Problem 5 - Error vs Iteration plot of Bisection, Fixed-point iteration, Newton's, Secant method.}
+    \label{fig3}
+    \end{figure}
+
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{cccc}
+        \toprule
+        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        \midrule
+        0 & 2.000000 & 0.693147 & 1.057104 \\
+        1 & 1.306853 & 0.212831 & 1.750251 \\
+        2 & 1.519684 & 0.187799 & 1.537420 \\
+        Final & 1.412396 & $8.36 \times 10^{-6}$ & 1.644708 \\
+        \bottomrule
+        \end{tabular}
+        \caption{Problem 5 - Fixed-Point Iteration for $f_1(x)$ on $[2, 4]$}
+        \label{tab:fixed_f1}
+        \end{table}
+
+        \vspace{1em}
+
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{cccc}
+        \toprule
+        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        \midrule
+        0 & 2.000000 & 0.693147 & 1.057104 \\
+        1 & 1.722741 & 0.467044 & 1.334362 \\
+        2 & 1.559309 & 0.250035 & 1.497794 \\
+        Final & 1.412397 & $1.15 \times 10^{-5}$ & 1.644706 \\
+        \bottomrule
+        \end{tabular}
+        \caption{Problem 5 - Newton's Method for $f_1(x)$ on $[2, 4]$}
+        \label{tab:newton_f1}
+        \end{table}
+
+        \vspace{1em}
+
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{cccc}
+        \toprule
+        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        \midrule
+        0 & 0.000000 & 1.000000 & 0.206035 \\
+        1 & 1.000000 & 2.000000 & 0.793965 \\
+        2 & 3.000000 & 4.000000 & 2.793965 \\
+        Final & \text{Diverge} & \text{Diverge} & \text{Diverge} \\
+        \bottomrule
+        \end{tabular}
+        \caption{Problem 5 - Fixed-Point Iteration for $f_2(x)$ on $[0, 0.5]$}
+        \label{tab:fixed_f2}
+        \end{table}
+
+        \vspace{1em}
+
+        \begin{table}[h!]
+        \centering
+        \begin{tabular}{cccc}
+        \toprule
+        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        \midrule
+        0 & 0.000000 & 1.000000 & 0.206035 \\
+        1 & 0.189280 & 0.068859 & 0.016755 \\
+        2 & 0.205656 & 0.001520 & 0.000379 \\
+        Final & 0.206035 & $2.68 \times 10^{-13}$ & $3.84 \times 10^{-13}$ \\
+        \bottomrule
+        \end{tabular}
+        \caption{Problem 5 - Newton's Method for $f_2(x)$ on $[0, 0.5]$}
+        \label{tab:newton_f2}
+    \end{table}
+
     \noindent 6. Let $ f(x, y) = x^3 - x + y^3 - y $ \\
     (a) Graph the surface $ z = f(x, y) $. \\
-    (b) Verify that the complete list of critical points of $ f $ is
+
+    \begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{generated_image3.png}
+    \caption{Problem 6.(a) - Graph of $f(x, y) = x^3 - x + y^3 - y$}
+    \label{fig4}
+    \end{figure}
+
+    \noindent (b) Verify that the complete list of critical points of $ f $ is
     \( % 문장 안에 수식 넣는 법 ; inline 수식 방식
     \left(-\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right),\ % 수식에 맞춰서 괄호 크기 자동 조정 ; 분수 표기
     \left(-\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right),\ 
     \left(\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right),\ 
     \left(\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right)
     \)
-    (c) Calculate the Hessian matrix? \\
-    (d) Fill in the following table. \\
+
+    \[ \text{First derivatives: }
+    \frac{\partial f}{\partial x} = 3x^2 - 1=0, 
+    \frac{\partial f}{\partial y} = 3y^2 - 1=0 \]
+    \[ \text{Critical points: }
+    \left( \pm \frac{1}{\sqrt{3}}, \pm \frac{1}{\sqrt{3}} \right) \]
+
+    \noindent (c) Calculate the Hessian matrix \\
+
+    \[ \text{Hessian: }
+    H = \begin{bmatrix}
+    6x & 0 \\
+    0 & 6y
+    \end{bmatrix} \]
+    \[ \text{At } \left( \frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}} \right):
+    H = \begin{bmatrix} 2\sqrt{3} & 0 \\ 0 & 2\sqrt{3} \end{bmatrix}, \lambda_1,\lambda_2 > 0 \Rightarrow \text{Local Min} \]
+    \[ \text{At } \left( -\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}} \right):
+    H = \begin{bmatrix} -2\sqrt{3} & 0 \\ 0 & -2\sqrt{3} \end{bmatrix}, \lambda_1,\lambda_2 < 0 \Rightarrow \text{Local Max} \]
+    \[ \text{At } \left( \pm \frac{1}{\sqrt{3}}, \mp \frac{1}{\sqrt{3}} \right): 
+    H = \begin{bmatrix} \pm 2\sqrt{3} & 0 \\ 0 & \mp 2\sqrt{3} \end{bmatrix}, \text{Eigenvalues of opposite sign} \Rightarrow \text{Saddle Point} \]
+
+    \noindent (d) Fill in the following table. \\
     \begin{tabular}{|c|c|c|c|}
         \hline
         Critical points & Hessian at $ (x, y) $ & Eigenvalues of Hessian at $ (x, y) $ & Concavity at $ (x, y) $ \\
         \hline
-        $ \left(-\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right) $ & & & \\
+        $ \left(-\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right) $ & $\begin{bmatrix} -2\sqrt{3} & 0 \\ 0 & -2\sqrt{3} \end{bmatrix}$ & $-2\sqrt{3}, -2\sqrt{3}$ & Concavity \\
         \hline
-        $ \left(-\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right) $ & & & \\
+        $ \left(-\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right) $ & $\begin{bmatrix} -2\sqrt{3} & 0 \\ 0 & 2\sqrt{3} \end{bmatrix}$ & $-2\sqrt{3}, 2\sqrt{3}$ & Saddle \\
         \hline
-        $ \left(\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right) $ & & & \\
+        $ \left(\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right) $ & $\begin{bmatrix} 2\sqrt{3} & 0 \\ 0 & -2\sqrt{3} \end{bmatrix}$ & $2\sqrt{3}, -2\sqrt{3}$ & Saddle \\
         \hline
-        $ \left(\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right) $ & & & \\
+        $ \left(\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right) $ & $\begin{bmatrix} 2\sqrt{3} & 0 \\ 0 & 2\sqrt{3} \end{bmatrix}$ & $2\sqrt{3}, 2\sqrt{3}$ & Convexity \\
         \hline
     \end{tabular} \\
-    (e) Examine the table carefully and explain how eigenvalues of Hessian matrices can help you classify
-    the concavity of the surface at each critical point. \\
+
+    \noindent (e) Examine the table carefully and explain how eigenvalues of Hessian matrices can help you classify
+    the concavity of the surface at each critical point.\\ \\
+    If eigenvalues are all positive, the function has local minimum and convexity at that point. \\
+    If eigenvalues are all negative, the function has local maximum and concavity at that point. \\
+    If eigenvalues are mixed with positive and negative, the function has saddle point. \\
 
     \noindent 7. Find the critical points of $ f(x, y) = x^2 + y^3 - x^2y + xy^2 $ and classify them all by using the eigenvalues
     of the appropriate Hessian matrices.
+
+    The partial derivatives are:
+    \[ \frac{\partial f}{\partial x} = - 2 x y + 2 x + y^{2} \]
+    \[ \frac{\partial f}{\partial y} = - x^{2} + 2 x y + 3 y^{2} \]
+
+    We solve the coupled equation:
+    \[ \frac{\partial f}{\partial x} = 0, \quad \frac{\partial f}{\partial y} = 0 \]
+
+    \[ \frac{\partial f}{\partial x} = 2x - 2xy + y^2 = 0 \\\\
+    \rightarrow 2x(1 - y) + y^2 = 0 \\\\
+    \rightarrow x = \frac{y^2}{2(y - 1)} \]
+    \[ \frac{\partial f}{\partial y} = 3y^2 - x^2 + 22xy = 0 \\\\
+    \rightarrow 3y^2 - \frac{y^4}{4(y - 1)^2} + \frac{2y^3}{2(y - 1)} = 0 \\\\[10pt]
+    \rightarrow y^2 \left(3 - \frac{y^2}{4(y - 1)^2} + \frac{y}{y - 1} \right) = 0 \\\\\]
+    \[ \rightarrow y^2 \left(12(y - 1)^2 - y^2 + 4y(y - 1) \right) = 0 \\\\[10pt]
+    \rightarrow y^2 (15y^2 - 28y + 12) = 0 \\\\[10pt]
+    \rightarrow y^2{(3y - 2)(5y - 6)} = 0 \\\]
+    \[ \rightarrow y_1 = 0, \quad y_2 = \frac{2}{3}, \quad y_3 = \frac{6}{5} \]
+
+    \begin{itemize}
+    \item Critical point: $(x, y) = (- \frac{2}{3}, \frac{2}{3})$
+    \item Critical point: $(x, y) = (0, 0)$
+    \item Critical point: $(x, y) = (\frac{18}{5}, \frac{6}{5})$
+    \end{itemize}
+
+    Hessian matrix at $(x, y)$ : \[ H(x, y) = \begin{bmatrix}
+        2 - 2y & -2x + 2y \\
+        -2x + 2y & 2x + 6y
+    \end{bmatrix} \]
+
+    At the critical point $(x, y) = (- \frac{2}{3}, \frac{2}{3})$:
+
+    Hessian :
+    \[
+    H = \left[\begin{matrix}\frac{2}{3} & \frac{8}{3}\\\frac{8}{3} & \frac{8}{3}\end{matrix}\right]
+    \]
+
+    Eigenvalues:
+    \[
+    \frac{5}{3} - \frac{\sqrt{73}}{3}, \frac{5}{3} + \frac{\sqrt{73}}{3}
+    \]
+    Classification: 	Saddle point\
+    \bigskip
+
+    At the critical point $(x, y) = (0, 0)$:
+
+    Hessian matrix:
+    \[
+    H = \left[\begin{matrix}2 & 0\\0 & 0\end{matrix}\right]
+    \]
+
+    Eigenvalues:
+    \[
+    2, 0
+    \]
+    Classification: 	Indeterminate\
+    \bigskip
+
+    At the critical point $(x, y) = (\frac{18}{5}, \frac{6}{5})$:
+
+    Hessian matrix:
+    \[
+    H = \left[\begin{matrix}- \frac{2}{5} & - \frac{24}{5}\\- \frac{24}{5} & \frac{72}{5}\end{matrix}\right]
+    \]
+
+    Eigenvalues:
+    \[
+    7 - \frac{\sqrt{1945}}{5}, 7 + \frac{\sqrt{1945}}{5}
+    \]
+    Classification: 	Saddle point\
+    \bigskip
 
 }   
 
