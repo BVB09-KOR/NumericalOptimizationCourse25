@@ -1,12 +1,110 @@
-\documentclass{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Preamble %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 메타 정보 입력 섹션
+\documentclass{article} % 문서 타입 정의
 
-\usepackage{lipsum, amsmath}
+\usepackage{amsmath, geometry} % 사용할 패키지 import
+\geometry{
+    a4paper,
+    left=25.4mm,
+    right=25.4mm,
+    top=25.4mm,
+    bottom=25.4mm,
+    } % 문서 크기 및 여백 설정
+\linespread{1.3} % 줄 간 간격 조절 ; default : 1.0
 
-\title{Assignment \#1}
-\author{Course : Numerical Optimization \\ Name : Chiyoung Kwon
- \\ ID : 261258263 \\ Department : Mechanical Engineering \\ Program : PhD}
-\date{Sep 23th, 2025}
+\title{\vspace{0cm} Assignment \#1: Review of Numerical Methods \\ and Basics of Optimization} % 제목
+% \author{Course \hfill: Numerical Optimization \\ Name : Chiyoung Kwon % 내 신상
+%  \\ ID : 261258263 \\ Department : Mechanical Engineering \\ Program : PhD}
+\date{} % 작성일자 ; 비워져있으면 출력 안됨
 
-\begin{document}
-\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 본문 섹션
+\begin{document} % 문서 본문 시작
+\maketitle{ % 위에서 쓴 제목, 내 신상, 작성일자 실제로 출력시키는 명령어
+    \begin{flushright} % 오른쪽 정렬
+        {
+        \vspace{-1.5cm}
+        Sep 24th, 2025 \\
+        \vspace{2mm}
+        Course : Numerical Optimization \\ Name : Chiyoung Kwon \\ ID : 261258263 \\
+        Department : Mechanical Engineering \\ Program : PhD
+        }
+    \end{flushright}
+    }
+{
+    \noindent 1. Consider the following function and do the following (by hand): \\
+    $ f(x) = 2x_1^2 - 3x_2^2 + 4x_1x_2 + (x_3 + 2)^2 + 4x_1 $ \\
+    (a) What are the gradient and Hessian of $ f(x) $? \\
+    (b) What are the stationary point(s) of $ f(x) $? \\
+    (c) Is the Hessian positive-definite? \\
+
+    \noindent 2. Let f(x) = sin(x) be a function that you are interested in optimizing. Please answer the following
+    questions completely: \\
+    (a) What are the necessary conditions for a solution to be an optimum of $ f(x) $? \\
+    (b) Using the necessary conditions obtained in (a), and considering the interval $ 0 \leq x \leq 2\pi $, obtain
+    the stationary point(s)? \\
+    (c) Confirm whether the above point(s) are inflection points, maxima, or minima. If they are maxi-
+    mum (or minimum) points, are they global maximum (or minimum) in the given interval? \\
+    (d) Plot the function $ sin(x) $ over the interval $ 0 \leq x \leq 2\pi $. Show all the stationary points on it, and
+    label them appropriately (maximum, minimum, or inflection). \\
+    
+    \noindent 3. Consider the single variable function $ f(x) = e - ax^2 $, where a is a constant. This function is often used as
+    a ”radial basis function” for function approximation. Please answer the following questions completely: \\
+    (a) Is the point $ x = 0 $ a stationary point for (i) $ a > 0 $, and (ii) $ a < 0 $. What happens if $ a = 0 $? Is
+    $ x = 0 $ still a stationary point? \\
+    (b) If $ x = 0 $ is a stationary point, classify it as a minimum, maximum, or an inflection point for (i)
+    $ a > 0 $ ,(ii) $ a < 0 $, and (iii) $ a = 0 $. \\
+    (c) Prepare a plot of f(x) for $ a = 1 $, $ a = 2 $, and $ a = 3 $. Plot all three curves on the same figure. By
+    observing the plot, do you think $ f(x) = e - ax^2 $, $ a > 0 $ has a global minimum? If so, what is the
+    value of $ x $ and $ f(x) $ at the minimum? \\
+
+    \noindent 4. Let $ A = \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix} $ \\ % 행렬 쓰는 법
+    (a) Use the definition to determine whether $ \begin{bmatrix} -\pi \\ \pi \end{bmatrix} $ and $ \begin{bmatrix} 1 \\ 2 \end{bmatrix} $
+    are eigenvectors. of $ A $ associated with $ \lambda = -1 $. \\
+    (b) Is either of the given eigenvectors of A associated with $ \lambda = 5 $? \\
+    (c) What is the point of this exercise? \\
+
+    \noindent 5. Use the Bisection, Fixed-Point, Newton’s, and Secant methods to find solutions accurate to within 
+    $ 10^{-5} $ for the following problems: \\
+    (a) $ x^2 - 4x + 4 - ln(x) = 0 $ for $ 1 \leq x \leq 2 $ and $ 2 \leq x \leq 4 $ \\
+    (b) $ x + 1 - 2sin(\pi x) = 0 $ for $ 0 \leq x \leq 0.5 $ and $ 0.5 \leq x \leq 1 $ \\
+    Write a code to solve the above problems using the specified methods. Provide a plot illustrating the
+    convergence of the error versus the number of iterations. For the fixed-point, Newton’s, and Secant
+    methods set $ x_0 $ to be the minimum point for the specified range. In addition to the plot, show a table
+    with four entries of the values of $ x, f(x) $ and the error $ f(x) $. You may treat $ x $ as $ \bar{x} $ in these cases. Out
+    of the four entries, provide the initial value, the final values and two intermediary values during the
+    convergence of the algorithm. \\
+
+    \noindent 6. Let $ f(x, y) = x^3 - x + y^3 - y $ \\
+    (a) Graph the surface $ z = f(x, y) $. \\
+    (b) Verify that the complete list of critical points of $ f $ is
+    \( % 문장 안에 수식 넣는 법 ; inline 수식 방식
+    \left(-\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right),\ % 수식에 맞춰서 괄호 크기 자동 조정 ; 분수 표기
+    \left(-\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right),\ 
+    \left(\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right),\ 
+    \left(\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right)
+    \)
+    (c) Calculate the Hessian matrix? \\
+    (d) Fill in the following table. \\
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Critical points & Hessian at $ (x, y) $ & Eigenvalues of Hessian at $ (x, y) $ & Concavity at $ (x, y) $ \\
+        \hline
+        $ \left(-\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right) $ & & & \\
+        \hline
+        $ \left(-\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right) $ & & & \\
+        \hline
+        $ \left(\frac{1}{\sqrt{3}}, -\frac{1}{\sqrt{3}}\right) $ & & & \\
+        \hline
+        $ \left(\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right) $ & & & \\
+        \hline
+    \end{tabular} \\
+    (e) Examine the table carefully and explain how eigenvalues of Hessian matrices can help you classify
+    the concavity of the surface at each critical point. \\
+
+    \noindent 7. Find the critical points of $ f(x, y) = x^2 + y^3 - x^2y + xy^2 $ and classify them all by using the eigenvalues
+    of the appropriate Hessian matrices.
+
+}   
+
 \end{document}
