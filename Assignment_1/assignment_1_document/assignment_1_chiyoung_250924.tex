@@ -1,3 +1,8 @@
+%% 본문(document) 안에서 글쓰다가 엔터 두번(줄바꿈 명령어) 치고 다시 글쓰면, paragraph 바뀌는 거임. 
+%% 그럼 새 paragraph은 pdf 상에서 이전 paragraph 바로 아랫줄로 위치하게 되고 자동으로 indentation 적용됨.
+%% 두 줄 띄우고 싶으면 \\(빈 줄 입력 명령어) 입력하고 엔터 두 번(줄바꿈 명령어) 쓰면 됨.
+%% \[ \] 사용하면, 두 번 엔터 안 쓰고 그냥 한 번 엔터 눌르고 본문 이어가도 줄바꿈 자동 적용됨.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Preamble %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 메타 정보 입력 섹션
 \documentclass{article} % 문서 타입 정의
@@ -36,15 +41,12 @@
     \end{flushright}
     }
 {
-    \noindent 1. Consider the following function and do the following (by hand): \\
-    \[ f(\mathbf{x}) = 2x_1^2 - 3x_2^2 + 4x_1x_2 + (x_3 + 2)^2 + 4x_1 \] \\
-
-    (a) What are the gradient and Hessian of $ f(\mathbf{x}) $? \\
-
+    \noindent 1. Consider the following function and do the following (by hand):
+    \[ f(\mathbf{x}) = 2x_1^2 - 3x_2^2 + 4x_1x_2 + (x_3 + 2)^2 + 4x_1 \] 
+    \noindent (a) What are the gradient and Hessian of $ f(\mathbf{x}) $?
     \[ \nabla^T f(\mathbf{x}) = \begin{bmatrix} \frac{\partial f}{\partial x_1} \\
         \frac{\partial f}{\partial x_2} \\ \frac{\partial f}{\partial x_3} \end{bmatrix} 
-        = \begin{bmatrix} 4x_1 + 4x_2 + 4 \\ -6x_2 + 4x_1 \\ 2x_3 + 4 \end{bmatrix} \] \\
-
+        = \begin{bmatrix} 4x_1 + 4x_2 + 4 \\ -6x_2 + 4x_1 \\ 2x_3 + 4 \end{bmatrix} \]
     \[ \mathbf{H}(\mathbf{x}) = \nabla(\nabla^T f(\mathbf{x})) = \begin{bmatrix}
         \frac{\partial^2 f(\mathbf{x})}{\partial x_1^2} & \frac{\partial^2 f(\mathbf{x})}{\partial x_1 \partial x_2} & \frac{\partial^2 f(\mathbf{x})}{\partial x_1 \partial x_3} \\
         \frac{\partial^2 f(\mathbf{x})}{\partial x_2 \partial x_1} & \frac{\partial^2 f(\mathbf{x})}{\partial x_2^2} & \frac{\partial^2 f(\mathbf{x})}{\partial x_2 \partial x_3} \\
@@ -54,15 +56,14 @@
         4 & 4 & 0 \\
         4 & -6 & 0 \\
         0 & 0 & 2
-    \end{bmatrix} \] \\
+    \end{bmatrix} \]
 
-    (b) What are the stationary point(s) of $ f(x) $? \\
+    \noindent (b) What are the stationary point(s) of $ f(x) $? \\
 
-    The gradient of function at the stationary point is zero.
-    Let stationary point $\mathbf{x^*}$ \\
-    \[ \rightarrow \nabla f(\mathbf{x^*}) = \mathbf{0} \] \\
+    The gradient of function at the stationary point is zero. Let stationary point $\mathbf{x^*}$
+    \[ \rightarrow \nabla f(\mathbf{x^*}) = \mathbf{0} \]
 
-    \[ \rightarrow \begin{bmatrix} 4x^*_1 + 4x^*_2 + 4 \\ -6x^*_2 + 4x^*_1 \\ 2x^*_3 + 4 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix} \] \\
+    \[ \rightarrow \begin{bmatrix} 4x^*_1 + 4x^*_2 + 4 \\ -6x^*_2 + 4x^*_1 \\ 2x^*_3 + 4 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix} \]
     
     \[ \rightarrow \begin{bmatrix}
         4 & 4 & 4 \\
@@ -72,7 +73,7 @@
         x^*_1 \\ x^*_2 \\ x^*_3
     \end{bmatrix} = \begin{bmatrix}
         0 \\ 0 \\ -4
-    \end{bmatrix} \] \\
+    \end{bmatrix} \]
 
     By Gaussian elimination process,
 
@@ -84,7 +85,7 @@
         x^*_1 \\ x^*_2 \\ x^*_3
     \end{bmatrix} = \begin{bmatrix}
         8 \\ 0 \\ -2
-    \end{bmatrix} \] \\
+    \end{bmatrix} \]
 
     \[ \rightarrow \begin{bmatrix}
         1 & 1 & 0 \\
@@ -94,7 +95,7 @@
         x^*_1 \\ x^*_2 \\ x^*_3
     \end{bmatrix} = \begin{bmatrix}
         2 \\ -8 \\ -2
-    \end{bmatrix} \] \\
+    \end{bmatrix} \]
 
     \[ \rightarrow \begin{bmatrix}
         1 & 0 & 0 \\
@@ -104,16 +105,16 @@
         x^*_1 \\ x^*_2 \\ x^*_3
     \end{bmatrix} = \begin{bmatrix}
         1.2 \\ 0.8 \\ -2
-    \end{bmatrix} \] \\
+    \end{bmatrix} \]
 
     \[ \therefore \mathbf{x^*} = \begin{bmatrix}
         1.2 \\ 0.8 \\ -2
-    \end{bmatrix} \] \\
+    \end{bmatrix} \]
 
-    (c) Is the Hessian positive-definite? \\
+    \noindent (c) Is the Hessian positive-definite? \\
 
-    To determine if Hessian is positive-definite, the eigenvalues of Hessian should be evaluated. \\
-    Let $\mathbf{x^*}$ eigenvector and $\lambda$ eigenvalues \\
+    To determine if Hessian is positive-definite, the eigenvalues of Hessian should be evaluated.
+    Let $\mathbf{x^*}$ eigenvector and $\lambda$ eigenvalues.
 
     \[ \rightarrow (\mathbf{H} - \lambda \mathbf{I}) \mathbf{x^*} = \mathbf{0} \]
 
@@ -125,58 +126,54 @@
         x^*_1 \\ x^*_2 \\ x^*_3
     \end{bmatrix} = \begin{bmatrix}
         0 \\ 0 \\ 0
-    \end{bmatrix} \] \\
+    \end{bmatrix} \]
 
-    \[ \rightarrow det(\mathbf{H} - \lambda \mathbf{I}) = 0 \] \\
+    \[ \rightarrow det(\mathbf{H} - \lambda \mathbf{I}) = 0 \]
 
-    \[ \rightarrow (\lambda - 2)(\lambda^2 + 2\lambda -40) = 0 \] \\
+    \[ \rightarrow (\lambda - 2)(\lambda^2 + 2\lambda -40) = 0 \]
 
-    \noindent The product of the roots of the second-order equation is negative,
-    so the eigenvalues of the characteristic equation must have different signs. \\
+    The product of the roots of the second-order equation is negative,
+    so the eigenvalues of the characteristic equation must have different signs.
+    
     Therefore the Hessian is indeterminate, rather than positive-definite \\
 
     \noindent 2. Let $f(x)$ = sin($x$) be a function that you are interested in optimizing. Please answer the following
-    questions completely: \\
+    questions completely:
 
     \noindent (a) What are the necessary conditions for a solution to be an optimum of $ f(x) $? \\
 
-    \noindent If \( \mathbf{x}^* \) is a local minimizer of a function \( f \) which is continuously differentiable near \( \mathbf{x}^* \), then:
+    If \( \mathbf{x}^* \) is a local minimizer of a function \( f \) which is continuously differentiable near \( \mathbf{x}^* \), then:
     \[
     \nabla f(\mathbf{x}^*) = 0
     \]
-    That is, the gradient of \( f \) at \( \mathbf{x}^* \) must be zero if \( \mathbf{x}^* \) is a local minimizer. \\
-    Proof by Contradiction, \\
+    \noindent That is, the gradient of \( f \) at \( \mathbf{x}^* \) must be zero if \( \mathbf{x}^* \) is a local minimizer. \\
+    \textit{Proof by Contradiction)}
 
     Assume \( \mathbf{x}^* \) is a local minimizer of \( f(\mathbf{x}) \), but:
     \[
     \nabla f(\mathbf{x}^*) \neq 0
     \]
-
     Using a second-order Taylor expansion:
     \[
     f(\mathbf{x}^* + \mathbf{p}) = f(\mathbf{x}^*) + \nabla f(\mathbf{x}^*)^\top \mathbf{p} + \frac{1}{2} \mathbf{p}^\top H(f(\mathbf{x})) \mathbf{p}
     \]
-
     Let \( \mathbf{p} = -\gamma \nabla f(\mathbf{x}^*) \), for some small \( \gamma > 0 \). Then:
     \[
     f(\mathbf{x}^* + \mathbf{p}) = f(\mathbf{x}^*) - \gamma \| \nabla f(\mathbf{x}^*) \|_2^2 + \mathcal{O}(\gamma^2)
     \]
-
     For sufficiently small \( \gamma \), the second-order term is negligible, so:
     \[
     f(\mathbf{x}^* + \mathbf{p}) < f(\mathbf{x}^*)
     \]
-
     This contradicts the assumption that \( \mathbf{x}^* \) is a local minimizer.
-
     \[
     \therefore \quad \nabla f(\mathbf{x}^*) = 0
-    \] \\
+    \]
     In this case, $ f(x) $ is univariate function so $ \frac{df(x^*)}{dx} $ should be zero to be local minimum at $ x^* $.
     The necessary condition for a local maximum follows in the same way. \\
 
     \noindent (b) Using the necessary conditions obtained in (a), and considering the interval $ 0 \leq x \leq 2\pi $, obtain
-    the stationary point(s)? 
+    the stationary point(s). 
     \begin{align*}
     f(x) &= \sin x \\
     \frac{df(x)}{dx} &= \cos x \\
@@ -195,22 +192,22 @@
     &\Rightarrow x_2^* \text{ is a local minimum} \\
     &f(x_2^*) = \sin\left(\frac{3\pi}{2}\right) = -1
     \end{align*}
-
     \begin{align*}
     f(x_2^*) &= -1 < f(0) = 0 < f(x_1^*) = 1 \\
     f(x_2^*) &= -1 < f(\pi) = 0 < f(x_1^*) = 1
     \end{align*}
-
     \[\therefore \text{At the given interval, } x^* = \frac{\pi}{2} \text{ is the global maximum, and } x^* = \frac{3\pi}{2} \text{ is the global minimum}.\]
 
     \noindent (d) Plot the function sin($x$) over the interval $ 0 \leq x \leq 2\pi $. Show all the stationary points on it, and
     label them appropriately (maximum, minimum, or inflection). \\
+    
+    Please refer to the Figure 1 to see the plot of function sin($x$).
     \begin{figure}[h!]
     \centering
     \includegraphics[width=0.5\textwidth]{generated_image.png}
     \caption{Problem 2.(d) - Graph of $\sin(x)$ with labeled stationary and inflection points.}
     \label{fig1}
-    \end{figure}
+    \end{figure} \\
 
     \noindent 3. Consider the single variable function $ f(x) = e - ax^2 $, where a is a constant. This function is often used as
     a ”radial basis function” for function approximation. Please answer the following questions completely: \\
@@ -254,6 +251,8 @@
     \noindent (c) Prepare a plot of f(x) for $ a = 1 $, $ a = 2 $, and $ a = 3 $. Plot all three curves on the same figure. By
     observing the plot, do you think $ f(x) = e - ax^2 $, $ a > 0 $ has a global minimum? If so, what is the
     value of $ x $ and $ f(x) $ at the minimum? \\
+    
+    Please refer to the Figure 2.
         \begin{figure}[h!]
         \centering
         \includegraphics[width=0.5\textwidth]{generated_image2.png}
@@ -293,8 +292,7 @@
         \therefore \begin{bmatrix} 1 \\ 2 \end{bmatrix} \text{ is not an eigenvector.}
     \]
 
-    \noindent (b) Is either of the given eigenvectors of A associated with $ \lambda = 5 $? \\
-
+    \noindent (b) Is either of the given eigenvectors of A associated with $ \lambda = 5 $?
     \[
         \begin{bmatrix}
         3 & 4 \\
@@ -340,7 +338,8 @@
         \end{bmatrix} \text{ is corresponding eigenvector.}
     \]
 
-    \noindent (c) What is the point of this exercise? \\
+    \noindent (c) What is the point of this exercise?
+
     If either eigenvector or eigenvalue is known, the other one could be evaluated as well.\\
 
     \noindent 5. Use the Bisection, Fixed-Point, Newton’s, and Secant methods to find solutions accurate to within 
@@ -354,6 +353,11 @@
     of the four entries, provide the initial value, the final values and two intermediary values during the
     convergence of the algorithm. \\
 
+    Please refer to the Figure 3 to see the plot of convergence error versus iterations of each method, 
+    and refert to the Table 1, 2, 3, 4 to see the comparison between Fixed-point iteration method and Newton's method.
+    Please refer to the Appendix section to see the code(Python-based) corresponding to each method.
+
+    \clearpage
     \begin{figure}[h!]
     \centering
     \includegraphics[width=1\textwidth]{generated_image4.png}
@@ -361,6 +365,7 @@
     \label{fig3}
     \end{figure}
 
+    \clearpage
     \begin{table}[h!]
         \centering
         \begin{tabular}{cccc}
@@ -376,8 +381,6 @@
         \caption{Problem 5 - Fixed-Point Iteration for $f_1(x)$ on $[2, 4]$}
         \label{tab:fixed_f1}
         \end{table}
-
-        \vspace{1em}
 
         \begin{table}[h!]
         \centering
@@ -395,8 +398,6 @@
         \label{tab:newton_f1}
         \end{table}
 
-        \vspace{1em}
-
         \begin{table}[h!]
         \centering
         \begin{tabular}{cccc}
@@ -412,8 +413,6 @@
         \caption{Problem 5 - Fixed-Point Iteration for $f_2(x)$ on $[0, 0.5]$}
         \label{tab:fixed_f2}
         \end{table}
-
-        \vspace{1em}
 
         \begin{table}[h!]
         \centering
@@ -431,8 +430,11 @@
         \label{tab:newton_f2}
     \end{table}
 
-    \noindent 6. Let $ f(x, y) = x^3 - x + y^3 - y $ \\
-    (a) Graph the surface $ z = f(x, y) $. \\
+    \noindent 6. Let $ f(x, y) = x^3 - x + y^3 - y $
+
+    \noindent(a) Graph the surface $ z = f(x, y) $. \\
+
+    Please refer to the Figure 4. \\
 
     \begin{figure}[h!]
     \centering
@@ -455,7 +457,7 @@
     \[ \text{Critical points: }
     \left( \pm \frac{1}{\sqrt{3}}, \pm \frac{1}{\sqrt{3}} \right) \]
 
-    \noindent (c) Calculate the Hessian matrix \\
+    \noindent (c) Calculate the Hessian matrix
 
     \[ \text{Hessian: }
     H = \begin{bmatrix}
@@ -470,6 +472,7 @@
     H = \begin{bmatrix} \pm 2\sqrt{3} & 0 \\ 0 & \mp 2\sqrt{3} \end{bmatrix}, \text{Eigenvalues of opposite sign} \Rightarrow \text{Saddle Point} \]
 
     \noindent (d) Fill in the following table. \\
+
     \begin{tabular}{|c|c|c|c|}
         \hline
         Critical points & Hessian at $ (x, y) $ & Eigenvalues of Hessian at $ (x, y) $ & Concavity at $ (x, y) $ \\
@@ -485,13 +488,14 @@
     \end{tabular} \\
 
     \noindent (e) Examine the table carefully and explain how eigenvalues of Hessian matrices can help you classify
-    the concavity of the surface at each critical point.\\ \\
+    the concavity of the surface at each critical point.\\
+
     If eigenvalues are all positive, the function has local minimum and convexity at that point. \\
     If eigenvalues are all negative, the function has local maximum and concavity at that point. \\
     If eigenvalues are mixed with positive and negative, the function has saddle point. \\
 
     \noindent 7. Find the critical points of $ f(x, y) = x^2 + y^3 - x^2y + xy^2 $ and classify them all by using the eigenvalues
-    of the appropriate Hessian matrices.
+    of the appropriate Hessian matrices. \\
 
     The partial derivatives are:
     \[ \frac{\partial f}{\partial x} = - 2 x y + 2 x + y^{2} \]
@@ -565,5 +569,102 @@
     \bigskip
 
 }   
+
+\clearpage
+\section*{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+Here is the Python code regarding the problem 5.
+
+\begin{verbatim}
+def bisection(func, a0, b0, tol):
+    if func(a0)*func(b0) < 0:
+        list_k, list_r, list_f = [0], [a0], [func(a0)]
+        a_new = a0
+        b_new = b0
+        k = 0
+        err = np.abs(b_new - a_new)
+        while err > tol:
+            k = k + 1; list_k.append(k)
+            a_old = a_new
+            b_old = b_new
+            mid = .5*(a_old + b_old); list_r.append(mid)
+            f_a_old = func(a_old)
+            f_b_old = func(b_old)
+            f_mid = func(mid); list_f.append(np.abs(f_mid))
+            if f_mid == 0:
+                err = 0
+                print(f"At {k:d}-th iteration : The root of which function value is exactly zero is acquired so iteration ends ! ")
+                break
+            sign_w_a = f_mid*f_a_old
+            sign_w_b = f_mid*f_b_old
+            if (sign_w_a < 0) & (sign_w_b > 0):
+                b_new = mid
+                a_new = a_old
+            elif (sign_w_a > 0) & (sign_w_b < 0):
+                a_new = mid
+                b_new = b_old
+            err = abs(a_new - b_new)
+            print(f"At {k:d}-th iteration : a_new, b_new of interval are {a_new:.6f}, {b_new:.6f} and the interval length is {err:.6f}")
+        if f_mid == 0:
+            r = mid
+            print(f"Converged to Exact Root. {k:d}-th iteration / r = {r:.6f} / func(r) = {func(r):.6f}")
+        else:
+            r = .5*(a_new + b_new)
+            print(f"Converged by Tolerance. {k:d}-th iteration / r = {r:.6f} / func(r) = {func(r):.6f} / length_interval = {err:.6f}")
+        return r, np.array(list_k), np.array(list_r), np.array(list_f)
+    else:
+        print(f"f(a0)*f(b0) is positive. There may not be root in [{a0}; {b0}]. Try another bracket !")
+--------------------------------------------------------------------------------------------------------------------------
+def fixed_point(func, r0, tol):
+g = lambda x : func(x) + x
+r_new = r0
+k = 0
+err = 1
+list_k, list_r, list_f = [k], [r0], [func(r0)]
+while err > tol:
+    k = k + 1; list_k.append(k)
+    r_old = r_new
+    r_new = g(r_old); list_r.append(r_new); list_f.append(func(r_new))
+    err = np.abs(r_new - r_old)
+    if err < tol:
+        print(f"Converged By Tolerance. {k:d}-th iteration / r = {r_new:.6f} / f(r) = {f(r_new):.6f} / |r_new - r_old| = {err:.6f}")
+        return r_new, np.array(list_k), np.array(list_r), np.array(list_f)
+    else:
+        print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")
+--------------------------------------------------------------------------------------------------------------------------
+def newton(func, Dfunc, r0, tol):
+r_new = r0
+k = 0
+err = 1
+list_k, list_r, list_f = [k], [r0], [func(r0)]
+while err > tol:
+    k = k + 1; list_k.append(k)
+    r_old = r_new
+    r_new = r_old - func(r_old)/Dfunc(r_old); list_r.append(r_new); list_f.append(func(r_new))
+    err = np.abs(r_new - r_old)
+    if err < tol:
+        print(f"Converged By Tolerance. {k:d}-th iteration / r = {r_new:.6f} / f(r) = {func(r_new):.6f} / |r_new - r_old| = {err:.6f}")
+        return r_new, np.array(list_k), np.array(list_r), np.array(list_f)
+    else:
+        print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")
+--------------------------------------------------------------------------------------------------------------------------
+def secant(func, r0, r1, tol):
+r_old = r0
+r_new = r1
+k = 0
+err = np.abs(r_new - r_old)
+list_k, list_r, list_f = [k], [r0], [func(r0)]
+while err > tol:
+    k = k + 1; list_k.append(k)
+    r_older = r_old
+    r_old = r_new
+    r_new = r_old - func(r_old)/(func(r_old) - func(r_older)/(r_old - r_older)); list_r.append(r_new); list_f.append(func(r_new))
+    err = np.abs(r_new - r_old)
+    if err < tol:
+        print(f"Converged By Tolerance. {k:d}-th iteration / r = {r_new:.6f} / f(r) = {func(r_new):.6f} / |r_new - r_old| = {err:.6f}")
+        return r_new, np.array(list_k), np.array(list_r), np.array(list_f)
+    else:
+        print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")
+\end{verbatim}
 
 \end{document}
