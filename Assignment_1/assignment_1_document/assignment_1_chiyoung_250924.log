@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.23)  24 SEP 2025 18:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.23)  24 SEP 2025 22:08
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -168,27 +168,65 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@thisruleclass=\count280
 \@lastruleclass=\count281
 \@thisrulewidth=\dimen180
+) (/usr/share/texlive/texmf-dist/tex/latex/listings/listings.sty
+\lst@mode=\count282
+\lst@gtempboxa=\box53
+\lst@token=\toks24
+\lst@length=\count283
+\lst@currlwidth=\dimen181
+\lst@column=\count284
+\lst@pos=\count285
+\lst@lostspace=\dimen182
+\lst@width=\dimen183
+\lst@newlines=\count286
+\lst@lineno=\count287
+\lst@maxwidth=\dimen184
+ (/usr/share/texlive/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
+\c@lstnumber=\count288
+\lst@skipnumbers=\count289
+\lst@framebox=\box54
+) (/usr/share/texlive/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2023/02/27 1.9 listings configuration
+))
+Package: listings 2023/02/27 1.9 (Carsten Heinz)
+ (/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2023/11/15 v3.01 LaTeX color extensions (UK)
+ (/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 274.
+ (/usr/share/texlive/texmf-dist/tex/latex/graphics/mathcolor.ltx)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1350.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1354.
+Package xcolor Info: Model `RGB' extended on input line 1366.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1368.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1371.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1372.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1373.
 ) (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count282
-\l__pdf_internal_box=\box53
+\l__color_backend_stack_int=\count290
+\l__pdf_internal_box=\box55
 ) (./assignment_1_chiyoung_250924.aux)
 \openout1 = `assignment_1_chiyoung_250924.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -226,17 +264,17 @@ LaTeX Font Info:    ... okay on input line 31.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count283
-\scratchdimen=\dimen181
-\scratchbox=\box54
-\nofMPsegments=\count284
-\nofMParguments=\count285
-\everyMPshowfont=\toks24
-\MPscratchCnt=\count286
-\MPscratchDim=\dimen182
-\MPnumerator=\count287
-\makeMPintoPDFobject=\count288
-\everyMPtoPDFconversion=\toks25
+\scratchcounter=\count291
+\scratchdimen=\dimen185
+\scratchbox=\box56
+\nofMPsegments=\count292
+\nofMParguments=\count293
+\everyMPshowfont=\toks25
+\MPscratchCnt=\count294
+\MPscratchDim=\dimen186
+\MPnumerator=\count295
+\makeMPintoPDFobject=\count296
+\everyMPtoPDFconversion=\toks26
 ) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
@@ -244,12 +282,14 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
 Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: listings package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 32.
+\c@lstlisting=\count297
+LaTeX Font Info:    Trying to load font information for U+msa on input line 47.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 32.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 47.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
@@ -257,44 +297,44 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 LaTeX Warning: No \author given.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 61--62
+Underfull \hbox (badness 10000) in paragraph at lines 76--77
 
  []
 
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Underfull \hbox (badness 10000) in paragraph at lines 114--115
+Underfull \hbox (badness 10000) in paragraph at lines 129--130
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 138--139
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 143--144
+Underfull \hbox (badness 10000) in paragraph at lines 158--159
 
  []
 
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 171--174
+Underfull \hbox (badness 10000) in paragraph at lines 186--189
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 201--203
+Underfull \hbox (badness 10000) in paragraph at lines 216--218
 
  []
 
 <generated_image.png, id=22, 722.7pt x 433.62pt>
 File: generated_image.png Graphic file (type png)
 <use generated_image.png>
-Package pdftex.def Info: generated_image.png  used on input line 207.
+Package pdftex.def Info: generated_image.png  used on input line 222.
 (pdftex.def)             Requested size: 226.48396pt x 135.88966pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 204--211
+Underfull \hbox (badness 10000) in paragraph at lines 219--226
 
  []
 
@@ -302,22 +342,22 @@ Underfull \hbox (badness 10000) in paragraph at lines 204--211
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 212--214
+Underfull \hbox (badness 10000) in paragraph at lines 227--229
 
  []
 
 [3]
-Underfull \hbox (badness 10000) in paragraph at lines 251--254
+Underfull \hbox (badness 10000) in paragraph at lines 266--269
 
  []
 
 <generated_image2.png, id=28, 722.7pt x 433.62pt>
 File: generated_image2.png Graphic file (type png)
 <use generated_image2.png>
-Package pdftex.def Info: generated_image2.png  used on input line 258.
+Package pdftex.def Info: generated_image2.png  used on input line 273.
 (pdftex.def)             Requested size: 226.48396pt x 135.88966pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 255--264
+Underfull \hbox (badness 10000) in paragraph at lines 270--279
 
  []
 
@@ -325,17 +365,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 255--264
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 265--268
+Underfull \hbox (badness 10000) in paragraph at lines 280--283
 
  []
 
 [4 <./generated_image.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 343--344
+Underfull \hbox (badness 10000) in paragraph at lines 358--359
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 345--355
+Underfull \hbox (badness 10000) in paragraph at lines 360--370
 
  []
 
@@ -343,158 +383,98 @@ Underfull \hbox (badness 10000) in paragraph at lines 345--355
 <generated_image4.png, id=40, 495.159pt x 524.943pt>
 File: generated_image4.png Graphic file (type png)
 <use generated_image4.png>
-Package pdftex.def Info: generated_image4.png  used on input line 363.
+Package pdftex.def Info: generated_image4.png  used on input line 378.
 (pdftex.def)             Requested size: 452.96793pt x 480.21399pt.
  [7
 
  <./generated_image4.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 435--436
+Underfull \hbox (badness 10000) in paragraph at lines 450--451
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 437--438
+Underfull \hbox (badness 10000) in paragraph at lines 452--453
 
  []
 
 <generated_image3.png, id=46, 501.5538pt x 406.8801pt>
 File: generated_image3.png Graphic file (type png)
 <use generated_image3.png>
-Package pdftex.def Info: generated_image3.png  used on input line 441.
+Package pdftex.def Info: generated_image3.png  used on input line 456.
 (pdftex.def)             Requested size: 317.07616pt x 257.22984pt.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-Overfull \hbox (8.53815pt too wide) in paragraph at lines 446--453
+Overfull \hbox (8.53815pt too wide) in paragraph at lines 461--468
 \OT1/cmr/m/n/10 (b) Ver-ify that the com-plete list of crit-i-cal points of $\OML/cmm/m/it/10 f$ \OT1/cmr/m/n/10 is $[] \OML/cmm/m/it/10 ;  [] ;  [] ;  []$ 
  []
 
 [8
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 474--475
+Underfull \hbox (badness 10000) in paragraph at lines 489--490
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 476--489
+Underfull \hbox (badness 10000) in paragraph at lines 491--504
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 490--492
+Underfull \hbox (badness 10000) in paragraph at lines 505--507
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 493--496
+Underfull \hbox (badness 10000) in paragraph at lines 508--511
 
  []
 
 [9 <./generated_image3.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 497--499
+Underfull \hbox (badness 10000) in paragraph at lines 512--514
 
  []
 
-[10{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}] [11]
-Overfull \hbox (234.77608pt too wide) in paragraph at lines 668--668
-[]                \OT1/cmtt/m/n/10 print(f"At {k:d}-th iteration : The root of which function value is exactly zero is acquired so iteration ends ! ")[] 
- []
+[10{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}] [11] (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2023/02/27 1.9 listings language file
+)
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <9> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 595.
 
-
-Overfull \hbox (261.02585pt too wide) in paragraph at lines 668--668
-[]            \OT1/cmtt/m/n/10 print(f"At {k:d}-th iteration : a_new, b_new of interval are {a_new:.6f}, {b_new:.6f} and the interval length is {err:.6f}")[] 
- []
-
-
-Overfull \hbox (98.27727pt too wide) in paragraph at lines 668--668
-[]            \OT1/cmtt/m/n/10 print(f"Converged to Exact Root. {k:d}-th iteration / r = {r:.6f} / func(r) = {func(r):.6f}")[] 
- []
-
-
-Overfull \hbox (250.52594pt too wide) in paragraph at lines 668--668
-[]            \OT1/cmtt/m/n/10 print(f"Converged by Tolerance. {k:d}-th iteration / r = {r:.6f} / func(r) = {func(r):.6f} / length_interval = {err:.6f}")[] 
- []
-
-
-Overfull \hbox (87.77736pt too wide) in paragraph at lines 668--668
-[]        \OT1/cmtt/m/n/10 print(f"f(a0)*f(b0) is positive. There may not be root in [{a0}; {b0}]. Try another bracket !")[] 
- []
-
-
-Overfull \hbox (187.52649pt too wide) in paragraph at lines 668--668
-[]\OT1/cmtt/m/n/10 --------------------------------------------------------------------------------------------------------------------------[] 
+Overfull \hbox (0.6307pt too wide) in paragraph at lines 633--634
+[][][] 
  []
 
 [12
 
 ]
-Overfull \hbox (240.02603pt too wide) in paragraph at lines 668--668
-[]        \OT1/cmtt/m/n/10 print(f"Converged By Tolerance. {k:d}-th iteration / r = {r_new:.6f} / f(r) = {f(r_new):.6f} / |r_new - r_old| = {err:.6f}")[] 
+Overfull \hbox (0.6307pt too wide) in paragraph at lines 650--651
+[][][] 
  []
 
 
-Overfull \hbox (66.77754pt too wide) in paragraph at lines 668--668
-[]        \OT1/cmtt/m/n/10 print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")[] 
+Overfull \hbox (0.6307pt too wide) in paragraph at lines 666--667
+[][][] 
  []
 
-
-Overfull \hbox (187.52649pt too wide) in paragraph at lines 668--668
-[]\OT1/cmtt/m/n/10 --------------------------------------------------------------------------------------------------------------------------[] 
- []
-
-
-Overfull \hbox (40.52777pt too wide) in paragraph at lines 668--668
-[]    \OT1/cmtt/m/n/10 r_new = r_old - func(r_old)/Dfunc(r_old); list_r.append(r_new); list_f.append(func(r_new))[] 
- []
-
-
-Overfull \hbox (255.7759pt too wide) in paragraph at lines 668--668
-[]        \OT1/cmtt/m/n/10 print(f"Converged By Tolerance. {k:d}-th iteration / r = {r_new:.6f} / f(r) = {func(r_new):.6f} / |r_new - r_old| = {err:.6f}")[] 
- []
-
-
-Overfull \hbox (66.77754pt too wide) in paragraph at lines 668--668
-[]        \OT1/cmtt/m/n/10 print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")[] 
- []
-
-
-Overfull \hbox (187.52649pt too wide) in paragraph at lines 668--668
-[]\OT1/cmtt/m/n/10 --------------------------------------------------------------------------------------------------------------------------[] 
- []
-
-
-Overfull \hbox (224.27617pt too wide) in paragraph at lines 668--668
-[]    \OT1/cmtt/m/n/10 r_new = r_old - func(r_old)/(func(r_old) - func(r_older)/(r_old - r_older)); list_r.append(r_new); list_f.append(func(r_new))[] 
- []
-
-
-Overfull \hbox (255.7759pt too wide) in paragraph at lines 668--668
-[]        \OT1/cmtt/m/n/10 print(f"Converged By Tolerance. {k:d}-th iteration / r = {r_new:.6f} / f(r) = {func(r_new):.6f} / |r_new - r_old| = {err:.6f}")[] 
- []
-
-[13]
-Overfull \hbox (66.77754pt too wide) in paragraph at lines 668--668
-[]        \OT1/cmtt/m/n/10 print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")[] 
- []
-
-[14] (./assignment_1_chiyoung_250924.aux)
+[13] [14] (./assignment_1_chiyoung_250924.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4584 strings out of 474222
- 73739 string characters out of 5748733
- 1945975 words of memory out of 5000000
- 26810 multiletter control sequences out of 15000+600000
- 567093 words of font info for 71 fonts, out of 8000000 for 9000
+ 6892 strings out of 474222
+ 104354 string characters out of 5748733
+ 2381975 words of memory out of 5000000
+ 29095 multiletter control sequences out of 15000+600000
+ 567559 words of font info for 73 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,14n,65p,411b,346s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on assignment_1_chiyoung_250924.pdf (14 pages, 1397846 bytes).
+ 57i,14n,65p,505b,1809s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb>
+Output written on assignment_1_chiyoung_250924.pdf (14 pages, 1401282 bytes).
 PDF statistics:
  145 PDF objects out of 1000 (max. 8388607)
  86 compressed objects within 1 object stream

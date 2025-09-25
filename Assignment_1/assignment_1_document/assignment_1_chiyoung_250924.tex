@@ -11,6 +11,8 @@
 \usepackage{graphicx}  % 이미지 삽입을 위한 패키지
 \usepackage{caption}   % 캡션 조절용 (선택)
 \usepackage{booktabs}  % 표에서 \toprule, \midrule, \bottomrule 사용을 위한 패키지
+\usepackage{listings} % 파이썬 코드 이쁘게 보일 수 있게 하는 패키지
+\usepackage{xcolor}
 
 \geometry{
     a4paper,
@@ -20,6 +22,19 @@
     bottom=25.4mm,
     } % 문서 크기 및 여백 설정
 \linespread{1.3} % 줄 간 간격 조절 ; default : 1.0
+
+\lstdefinestyle{pythonstyle}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{orange},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  tabsize=4,
+  captionpos=b
+}
 
 \title{\vspace{0cm} Assignment \#1: Review of Numerical Methods \\ and Basics of Optimization} % 제목
 % \author{Course \hfill: Numerical Optimization \\ Name : Chiyoung Kwon % 내 신상
@@ -575,7 +590,8 @@
 \addcontentsline{toc}{section}{Appendix}
 Here is the Python code regarding the problem 5.
 
-\begin{verbatim}
+\lstset{style=pythonstyle}
+\begin{lstlisting}[title={Root-Finding Methods(Bisection, Fixed-point iteration, Newton's, Secant) in Python}]
 def bisection(func, a0, b0, tol):
     if func(a0)*func(b0) < 0:
         list_k, list_r, list_f = [0], [a0], [func(a0)]
@@ -614,7 +630,7 @@ def bisection(func, a0, b0, tol):
         return r, np.array(list_k), np.array(list_r), np.array(list_f)
     else:
         print(f"f(a0)*f(b0) is positive. There may not be root in [{a0}; {b0}]. Try another bracket !")
---------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 def fixed_point(func, r0, tol):
 g = lambda x : func(x) + x
 r_new = r0
@@ -631,7 +647,7 @@ while err > tol:
         return r_new, np.array(list_k), np.array(list_r), np.array(list_f)
     else:
         print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")
---------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 def newton(func, Dfunc, r0, tol):
 r_new = r0
 k = 0
@@ -647,7 +663,7 @@ while err > tol:
         return r_new, np.array(list_k), np.array(list_r), np.array(list_f)
     else:
         print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")
---------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 def secant(func, r0, r1, tol):
 r_old = r0
 r_new = r1
@@ -665,6 +681,6 @@ while err > tol:
         return r_new, np.array(list_k), np.array(list_r), np.array(list_f)
     else:
         print(f"At {k:d}-th iteration : r_new is {r_new:.6f} and the |r_new - r_old| is {err:.6f}")
-\end{verbatim}
+\end{lstlisting}
 
 \end{document}
