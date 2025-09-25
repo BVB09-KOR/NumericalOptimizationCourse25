@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1758766102.13739 "/home/chiyoung0/NumericalOptimization_25/Assignment_1/assignment_1_document/assignment_1_chiyoung_250924.tex" "assignment_1_chiyoung_250924.pdf" "assignment_1_chiyoung_250924" 1758766103.56676 0
+["pdflatex"] 1758769156.46543 "/home/chiyoung0/NumericalOptimization_25/Assignment_1/assignment_1_document/assignment_1_chiyoung_250924.tex" "assignment_1_chiyoung_250924.pdf" "assignment_1_chiyoung_250924" 1758769157.95576 0
   "/etc/texmf/web2c/texmf.cnf" 1758648416.33746 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/chiyoung0/NumericalOptimization_25/Assignment_1/assignment_1_document/assignment_1_chiyoung_250924.tex" 1758766101.96619 27754 af4077034e83a6e667fc3f9076abccb3 ""
+  "/home/chiyoung0/NumericalOptimization_25/Assignment_1/assignment_1_document/assignment_1_chiyoung_250924.tex" 1758769156.07143 28803 1be877a814f09f703b92d8b763b7ef15 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -87,8 +87,8 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1758648445.92947 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1758648597 8214518 69fee2fa92449fa2d72e8e109c862f8e ""
-  "assignment_1_chiyoung_250924.aux" 1758766103.52033 1806 3975343fed24131c62f032d4178ab78e "pdflatex"
-  "assignment_1_chiyoung_250924.tex" 1758766101.96619 27754 af4077034e83a6e667fc3f9076abccb3 ""
+  "assignment_1_chiyoung_250924.aux" 1758769157.88852 1806 3975343fed24131c62f032d4178ab78e "pdflatex"
+  "assignment_1_chiyoung_250924.tex" 1758769156.07143 28803 1be877a814f09f703b92d8b763b7ef15 ""
   "generated_image.png" 1758690119.35467 55893 18e69e476f158bb25a0e0759c6bb2b3b ""
   "generated_image2.png" 1758691691.60468 193090 a66ce77ebb90c3690ac4770e87e706d1 ""
   "generated_image3.png" 1758700446.3014 222092 bf848a43c47aee9254c07a3f6146c15d ""

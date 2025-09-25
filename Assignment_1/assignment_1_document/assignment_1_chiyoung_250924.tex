@@ -370,7 +370,20 @@
 
     Please refer to the Figure 3 to see the plot of convergence error versus iterations of each method, 
     and refert to the Table 1, 2, 3, 4 to see the comparison between Fixed-point iteration method and Newton's method.
-    Please refer to the Appendix section to see the code(Python-based) corresponding to each method.
+    Please refer to the Appendix section to see the code(Python-based) corresponding to each method. \\
+
+    \noindent Bisection Method : This method always found roots regardless of the function that it solved for. The rate of convergence seemed affordable. \\
+
+    \noindent Fixed-Point Iteration Method : This method didn't find a root for second function and it ended up with divergence.
+     In the case of first function, the rate of convergence was very low even if it found a root. 
+     And it even didn't find a root existing between [2; 4] with regard to the first function. \\
+
+    \noindent Newton's Method : This method showed the fastest rate of convergence. 
+    But when it attempted to find a root for second function between [2; 4], it ended up with finding a root existing between [1; 2].
+    It failed to find the root between [2; 4] regardless of the initial guess. \\
+
+    \noindent Secant Method : This method found roots regardless of the function being solved, along with the bisection method.
+    But the rate of convergence changed rapidly depending on the case. \\
 
     \clearpage
     \begin{figure}[h!]
@@ -385,12 +398,12 @@
         \centering
         \begin{tabular}{cccc}
         \toprule
-        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        Iteration ($k$) & $r$ & $|f(r)|$ & $|r^* - r|$ \\
         \midrule
         0 & 2.000000 & 0.693147 & 1.057104 \\
         1 & 1.306853 & 0.212831 & 1.750251 \\
         2 & 1.519684 & 0.187799 & 1.537420 \\
-        Final & 1.412396 & $8.36 \times 10^{-6}$ & 1.644708 \\
+        82(converged) & 1.412396 & $8.36 \times 10^{-6}$ & 1.644708 \\
         \bottomrule
         \end{tabular}
         \caption{Problem 5 - Fixed-Point Iteration for $f_1(x)$ on $[2, 4]$}
@@ -401,12 +414,12 @@
         \centering
         \begin{tabular}{cccc}
         \toprule
-        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        Iteration ($k$) & $r$ & $|f(r)|$ & $|r^* - r|$ \\
         \midrule
         0 & 2.000000 & 0.693147 & 1.057104 \\
         1 & 1.722741 & 0.467044 & 1.334362 \\
         2 & 1.559309 & 0.250035 & 1.497794 \\
-        Final & 1.412397 & $1.15 \times 10^{-5}$ & 1.644706 \\
+        14(converged) & 1.412397 & $1.15 \times 10^{-5}$ & 1.644706 \\
         \bottomrule
         \end{tabular}
         \caption{Problem 5 - Newton's Method for $f_1(x)$ on $[2, 4]$}
@@ -417,12 +430,12 @@
         \centering
         \begin{tabular}{cccc}
         \toprule
-        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        Iteration ($k$) & $r$ & $|f(r)|$ & $|r^* - r|$ \\
         \midrule
         0 & 0.000000 & 1.000000 & 0.206035 \\
         1 & 1.000000 & 2.000000 & 0.793965 \\
         2 & 3.000000 & 4.000000 & 2.793965 \\
-        Final & \text{Diverge} & \text{Diverge} & \text{Diverge} \\
+        $\infty$(diverged) & $\infty$(diverged) & $\infty$(diverged) & $\infty$(diverged) \\
         \bottomrule
         \end{tabular}
         \caption{Problem 5 - Fixed-Point Iteration for $f_2(x)$ on $[0, 0.5]$}
@@ -433,12 +446,12 @@
         \centering
         \begin{tabular}{cccc}
         \toprule
-        Iteration ($k$) & $r$ & $f(r)$ & $|r^* - r|$ \\
+        Iteration ($k$) & $r$ & $|f(r)|$ & $|r^* - r|$ \\
         \midrule
         0 & 0.000000 & 1.000000 & 0.206035 \\
         1 & 0.189280 & 0.068859 & 0.016755 \\
         2 & 0.205656 & 0.001520 & 0.000379 \\
-        Final & 0.206035 & $2.68 \times 10^{-13}$ & $3.84 \times 10^{-13}$ \\
+        4(converged) & 0.206035 & $2.68 \times 10^{-13}$ & $3.84 \times 10^{-13}$ \\
         \bottomrule
         \end{tabular}
         \caption{Problem 5 - Newton's Method for $f_2(x)$ on $[0, 0.5]$}
