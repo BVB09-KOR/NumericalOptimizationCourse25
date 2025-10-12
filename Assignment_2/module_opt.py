@@ -133,6 +133,11 @@ def backtracking(func, x, grad_x, p, k):
     return alpha
 
 def stp_descent(func, x_cur, tol):
+    if type(x_cur) != np.ndarray:
+        x_cur = np.array(x_cur)
+    else:
+        pass
+    x_cur = x_cur.reshape(-1, 1)
     dim_x = x_cur.shape[0]
 
     print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
@@ -170,6 +175,11 @@ def stp_descent(func, x_cur, tol):
     return x_new
 
 def cg_hs(func, x_cur, tol):
+    if type(x_cur) != np.ndarray:
+        x_cur = np.array(x_cur)
+    else:
+        pass    
+    x_cur = x_cur.reshape(-1, 1)
     dim_x = x_cur.shape[0] # design space dimension
 
     print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
@@ -212,6 +222,11 @@ def cg_hs(func, x_cur, tol):
     return x_new
 
 def cg_fr(func, x_cur, tol):
+    if type(x_cur) != np.ndarray:
+        x_cur = np.array(x_cur)
+    else:
+        pass
+    x_cur = x_cur.reshape(-1, 1)
     dim_x = x_cur.shape[0] # design space dimension
 
     print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
@@ -254,6 +269,11 @@ def cg_fr(func, x_cur, tol):
     return x_new
 
 def newton(func, x_cur, tol):
+    if type(x_cur) != np.ndarray:
+        x_cur = np.array(x_cur)
+    else:
+        pass
+    x_cur = x_cur.reshape(-1, 1)
     dim_x = x_cur.shape[0] # design space dimension
 
     print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
@@ -292,6 +312,11 @@ def newton(func, x_cur, tol):
     print(f'optimization converges --> x* = {x_new.reshape(dim_x)} / |grad(x*)| = {np.linalg.norm(grad_new)}')
 
 def quasi_newton_bfgs(func, x_cur, tol):
+    if type(x_cur) != np.ndarray:
+        x_cur = np.array(x_cur)
+    else:
+        pass
+    x_cur = x_cur.reshape(-1, 1)
     dim_x = x_cur.shape[0] # design space dimension
 
     print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
