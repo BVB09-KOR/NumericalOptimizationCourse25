@@ -1,22 +1,8 @@
-############################################# Numerical Optimization 모듈(완성본 모음) #############################################
+############################################# Numerical Optimization 모듈(완성본 모음 - optimization point만 return해주는 함수 버전) #############################################
 import numpy as np
 
 ######################### Central Difference Method - Scalar func / n-dim point x
 ### scipy.differentiate.derivative(f, x, ...) 함수 사용 가능
-<<<<<<< HEAD
-def grad_centraldiff(func, x):
-    
-    dim_x = x.shape[0]
-    dfdx = np.empty([dim_x, 1])
-    h = 1e-5
-    
-    for i in np.arange(dim_x):
-        dx = np.zeros([dim_x, 1]); dx[i] = 1
-        dfdx[i] = (func(x + h*dx) - func(x - h*dx))/(2*h)
-    
-    if not np.isfinite(dfdx).all():
-        raise ValueError("Non-finite number detected in gradient (NaN or inf)")
-=======
 def grad_centraldiff(f, x):
     x = np.atleast_1d(x)
     rel_step = 1e-6
@@ -30,7 +16,6 @@ def grad_centraldiff(f, x):
         dfdx[i] = num/den
     if not np.isfinite(dfdx).all(): # Check finitude
         raise ValueError('At least one component of gradient is not finite !')
->>>>>>> c1aa413 (step length 알고리즘 backtracking에서 strong wolfe + interpolation으로 변경하고 기존의 optimization 함수들도 수치안정성 관련 개선/exception발생/행렬 계산 자잘한 미스 개선 등 조치해놓음. 습작들은 try_scripts 폴더로 옮기고 breguet_range.ipynb는 breguet 함수 V, h 상하한 관련 코멘트 추가함.)
     return dfdx
 
 ######################### Central Difference Method로 함수의 근사 hessian 계산하는 함수
@@ -61,16 +46,9 @@ def hessian_centraldiff(func, x):
             x_ij_minus_minus[j] -= h
             
             H[i, j] = (func(x_ij_plus_plus) - func(x_ij_plus_minus) - func(x_ij_minus_plus) + func(x_ij_minus_minus)) / (4 * h**2)
-<<<<<<< HEAD
-    
-    if not np.isfinite(H).all():
-        raise ValueError("Non-finite number detected in Hessian (NaN or inf)")
-    
-=======
     if not np.isfinite(H).all():
         print(f'Warning : Hessian approximation includes NaN !')
         # raise ValueError('Warning : Hessian approximation includes NaN !')
->>>>>>> c1aa413 (step length 알고리즘 backtracking에서 strong wolfe + interpolation으로 변경하고 기존의 optimization 함수들도 수치안정성 관련 개선/exception발생/행렬 계산 자잘한 미스 개선 등 조치해놓음. 습작들은 try_scripts 폴더로 옮기고 breguet_range.ipynb는 breguet 함수 V, h 상하한 관련 코멘트 추가함.)
     return H
 
 ######################### Search direction using Steepest Descent Method - Scalar func / n-dim point x
@@ -133,41 +111,17 @@ def search_direction_cg_fr(k, grad_old, grad_cur, p_old):
 ######## Hessian이 PD가 아니거나, x0가 x*에서 너무 먼 경우 수렴 보장 X.
 def search_direction_newton(grad, hessian):
     p = -np.linalg.solve(hessian, grad)
-<<<<<<< HEAD
-    
-    if not np.isfinite(p).all():
-        raise ValueError("Non-finite number detected in search_direction_newton (NaN or inf)")
-    
-=======
->>>>>>> c1aa413 (step length 알고리즘 backtracking에서 strong wolfe + interpolation으로 변경하고 기존의 optimization 함수들도 수치안정성 관련 개선/exception발생/행렬 계산 자잘한 미스 개선 등 조치해놓음. 습작들은 try_scripts 폴더로 옮기고 breguet_range.ipynb는 breguet 함수 V, h 상하한 관련 코멘트 추가함.)
     return p
 
 ######################### Search direction using Conjugate Gradient Method - Fletcher-Reeves Formula
 ### scipy.optimize.minimize(..., method='BFGS', ...) 함수 사용 가능
 def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hessian_inv_aprx_old):
-<<<<<<< HEAD
-    
-    dim_x = x_old.shape[0]
-    
-    if k == 0:
-=======
     dim_x = len(x_cur)
     if k == 0: # 첫 iteration의 근사 Hessian inverse는 I로 설정
->>>>>>> c1aa413 (step length 알고리즘 backtracking에서 strong wolfe + interpolation으로 변경하고 기존의 optimization 함수들도 수치안정성 관련 개선/exception발생/행렬 계산 자잘한 미스 개선 등 조치해놓음. 습작들은 try_scripts 폴더로 옮기고 breguet_range.ipynb는 breguet 함수 V, h 상하한 관련 코멘트 추가함.)
         hessian_inv_aprx = np.eye(dim_x)
     else: # 2번째 이후 iteration부터의 근사 Hessian inverse부터는 BFGS로 구함
         dx = x_cur - x_old
         dg = grad_cur - grad_old
-<<<<<<< HEAD
-        dgdotdx = float(dg.T @ dx)
-        if abs(dgdotdx) < 1e-10:  # to avoid division by zero
-            hessian_inv_aprx = np.eye(dim_x)
-        else:
-            I = np.eye(dim_x)
-            rho = 1.0 / dgdotdx
-            V = I - rho * dx @ dg.T
-            hessian_inv_aprx = V @ hessian_inv_aprx_old @ V.T + rho * dx @ dx.T # BFGS formula
-=======
         dgdx = dg @ dx
         if abs(dgdx) < 1e-10:  # to avoid division by zero
             hessian_inv_aprx = np.eye(dim_x)
@@ -176,7 +130,6 @@ def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hess
             rho = 1.0 / dgdx
             V = I - rho * np.outer(dx, dg) # 벡터로 행렬 생성 연산은 @ 연산 쓰지 말고 대신 np.outer(a, b) 함수 써라.
             hessian_inv_aprx = V @ hessian_inv_aprx_old @ V.T + rho * np.outer(dx, dx) # BFGS formula
->>>>>>> c1aa413 (step length 알고리즘 backtracking에서 strong wolfe + interpolation으로 변경하고 기존의 optimization 함수들도 수치안정성 관련 개선/exception발생/행렬 계산 자잘한 미스 개선 등 조치해놓음. 습작들은 try_scripts 폴더로 옮기고 breguet_range.ipynb는 breguet 함수 V, h 상하한 관련 코멘트 추가함.)
 
     p = -hessian_inv_aprx @ grad_cur
 
@@ -210,248 +163,6 @@ def backtracking(func, x, grad_x, p, k):
 
     return alpha
 
-<<<<<<< HEAD
-def stp_descent(func, x_cur, tol):
-    try:
-        if type(x_cur) != np.ndarray:
-            x_cur = np.array(x_cur)
-        else:
-            pass
-        x_cur = x_cur.reshape(-1, 1)
-        dim_x = x_cur.shape[0]
-
-        print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
-        grad_cur = grad_centraldiff(func, x_cur)
-        k = 0
-
-        #################################### NC for optimality check of initial guess ####################################
-        if np.linalg.norm(x_cur) < tol:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is optimum point !')
-            x_new = x_cur
-        else:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is not optimum point. Optimization begins ...')
-
-            #################################### Line search ####################################
-            x_new = x_cur
-            grad_new = grad_cur
-            while np.linalg.norm(grad_new) > tol: #### Convergence Check ####
-                #################################### Search direction p_cur ####################################
-                x_cur = x_new
-                grad_cur = grad_new
-                p_cur = search_direction_stp_descent(func, x_cur) #### Steepest descent method ####
-                print(f'p_{k} = {p_cur.reshape(dim_x)}')
-
-                #################################### Step length alpha ####################################
-                alpha = backtracking(func, x_cur, grad_cur, p_cur, k) #### backtracking algorithm ####
-
-                # New point x_new
-                x_new = x_cur + alpha*p_cur
-                grad_new = grad_centraldiff(func, x_new)
-                k = k + 1
-                print(f'x_{k} = {x_new.reshape(dim_x)} / |grad(x_{k})| = {np.linalg.norm(grad_new)}')
-
-        #################################### Complete Optimization ####################################
-        print(f'optimization converges --> x* = {x_new.reshape(dim_x)} / |grad(x*)| = {np.linalg.norm(grad_new)}')
-        return x_new
-    except ValueError as e:
-        print(f'Optimization stopped due to NaN: {e}')
-
-def cg_hs(func, x_cur, tol):
-    try:
-        if type(x_cur) != np.ndarray:
-            x_cur = np.array(x_cur)
-        else:
-            pass    
-        x_cur = x_cur.reshape(-1, 1)
-        dim_x = x_cur.shape[0] # design space dimension
-
-        print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
-        grad_cur = grad_centraldiff(func, x_cur) # gradient of x0
-        p_cur = -grad_cur # Search direction Initializion for 1st line search(to be used as p_old)
-        k = 0 # Iteration initialization
-
-        #################################### NC for optimality check of initial guess ####################################
-        if np.linalg.norm(grad_cur) < tol:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is optimum point !')
-            x_new = x_cur
-        else:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is not optimum point. Optimization begins ...')
-
-            #################################### Line search ####################################
-            x_new = x_cur # Iteration loop 위해 이름 변경
-            grad_new = grad_cur # Iteration loop 위해 이름 변경
-            while np.linalg.norm(grad_new) > tol: #### Convergence Check ####
-                #################################### Search direction p_cur ####################################
-                grad_old = grad_cur
-                p_old = p_cur
-
-                x_cur = x_new
-                grad_cur = grad_new
-
-                p_cur = search_direction_cg_hs(k, grad_old, grad_cur, p_old)
-                print(f'p_{k} = {p_cur.reshape(dim_x)}')
-
-                #################################### Step length alpha ####################################
-                alpha = backtracking(func, x_cur, grad_cur, p_cur, k) #### backtracking algorithm ####
-
-                # New point x_new
-                x_new = x_cur + alpha*p_cur
-                grad_new = grad_centraldiff(func, x_new)
-                k = k + 1
-                print(f'x_{k} = {x_new.reshape(dim_x)} / |grad(x_{k})| = {np.linalg.norm(grad_new)}')
-
-        #################################### Complete Optimization ####################################
-        print(f'optimization converges --> x* = {x_new.reshape(dim_x)} / |grad(x*)| = {np.linalg.norm(grad_new)}')
-        return x_new
-    except ValueError as e:
-        print(f'Optimization stopped due to NaN: {e}')
-
-def cg_fr(func, x_cur, tol):
-    try:
-        if type(x_cur) != np.ndarray:
-            x_cur = np.array(x_cur)
-        else:
-            pass
-        x_cur = x_cur.reshape(-1, 1)
-        dim_x = x_cur.shape[0] # design space dimension
-
-        print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
-        grad_cur = grad_centraldiff(func, x_cur) # gradient of x0
-        p_cur = -grad_cur # Search direction Initializion for 1st line search(to be used as p_old)
-        k = 0 # Iteration initialization
-
-        #################################### NC for optimality check of initial guess ####################################
-        if np.linalg.norm(grad_cur) < tol:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is optimum point !')
-            x_new = x_cur
-        else:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is not optimum point. Optimization begins ...')
-
-            #################################### Line search ####################################
-            x_new = x_cur # Iteration loop 위해 이름 변경
-            grad_new = grad_cur # Iteration loop 위해 이름 변경
-            while np.linalg.norm(grad_new) > tol: #### Convergence Check ####
-                #################################### Search direction p_cur ####################################
-                grad_old = grad_cur
-                p_old = p_cur
-
-                x_cur = x_new
-                grad_cur = grad_new
-
-                p_cur = search_direction_cg_fr(k, grad_old, grad_cur, p_old)
-                print(f'p_{k} = {p_cur.reshape(dim_x)}')
-
-                #################################### Step length alpha ####################################
-                alpha = backtracking(func, x_cur, grad_cur, p_cur, k) #### backtracking algorithm ####
-
-                # New point x_new
-                x_new = x_cur + alpha*p_cur
-                grad_new = grad_centraldiff(func, x_new)
-                k = k + 1
-                print(f'x_{k} = {x_new.reshape(dim_x)} / |grad(x_{k})| = {np.linalg.norm(grad_new)}')
-
-        #################################### Complete Optimization ####################################
-        print(f'optimization converges --> x* = {x_new.reshape(dim_x)} / |grad(x*)| = {np.linalg.norm(grad_new)}')
-        return x_new
-    except ValueError as e:
-        print(f'Optimization stopped due to NaN: {e}')
-
-def newton(func, x_cur, tol):
-    try:
-        if type(x_cur) != np.ndarray:
-            x_cur = np.array(x_cur)
-        else:
-            pass
-        x_cur = x_cur.reshape(-1, 1)
-        dim_x = x_cur.shape[0] # design space dimension
-
-        print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
-        grad_cur = grad_centraldiff(func, x_cur) # gradient of x0
-        k = 0 # Iteration initialization
-
-        #################################### NC for optimality check of initial guess ####################################
-        if np.linalg.norm(grad_cur) < tol:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is optimum point !')
-            x_new = x_cur
-        else:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is not optimum point. Optimization begins ...')
-
-            #################################### Line search ####################################
-            x_new = x_cur # Iteration loop 위해 이름 변경
-            grad_new = grad_cur # Iteration loop 위해 이름 변경
-            while np.linalg.norm(grad_new) > tol: #### Convergence Check ####
-                #################################### Search direction p_cur ####################################
-                x_cur = x_new
-                grad_cur = grad_new
-                hessian_cur = hessian_centraldiff(func, x_cur)
-
-                p_cur = search_direction_newton(grad_cur, hessian_cur)
-                print(f'p_{k} = {p_cur.reshape(dim_x)}')
-
-                #################################### Step length alpha ####################################
-                alpha = backtracking(func, x_cur, grad_cur, p_cur, k) #### backtracking algorithm ####
-
-                # New point x_new
-                x_new = x_cur + alpha*p_cur
-                grad_new = grad_centraldiff(func, x_new)
-                k = k + 1
-                print(f'x_{k} = {x_new.reshape(dim_x)} / |grad(x_{k})| = {np.linalg.norm(grad_new)}')
-
-        #################################### Complete Optimization ####################################
-        print(f'optimization converges --> x* = {x_new.reshape(dim_x)} / |grad(x*)| = {np.linalg.norm(grad_new)}')
-    except ValueError as e:
-        print(f'Optimization stopped due to NaN: {e}')
-
-def quasi_newton_bfgs(func, x_cur, tol):
-    try:
-        if type(x_cur) != np.ndarray:
-            x_cur = np.array(x_cur)
-        else:
-            pass
-        x_cur = x_cur.reshape(-1, 1)
-        dim_x = x_cur.shape[0] # design space dimension
-
-        print(f'x0 : {x_cur.reshape(dim_x)}') # 이렇게 메시지 출력할 때만 vector form으로 쓰자(메시지는 알아보기 쉬워야 하니까).
-        grad_cur = grad_centraldiff(func, x_cur) # gradient of x0
-        k = 0 # Iteration initialization
-
-        #################################### NC for optimality check of initial guess ####################################
-        if np.linalg.norm(grad_cur) < tol:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is optimum point !')
-            x_new = x_cur
-        else:
-            print(f'norm of grad at x0 : {np.linalg.norm(grad_cur)} --> x0 is not optimum point. Optimization begins ...')
-
-            #################################### Line search ####################################
-            x_new = x_cur # Iteration loop 위해 이름 변경
-            grad_new = grad_cur # Iteration loop 위해 이름 변경
-            hessian_inv_aprx_cur = np.identity(dim_x) # Iteration loop 위해 initialization
-            while np.linalg.norm(grad_new) > tol: #### Convergence Check ####
-                #################################### Search direction p_cur ####################################
-                x_old = x_cur
-                x_cur = x_new
-                grad_old = grad_cur
-                grad_cur = grad_new
-                hessian_inv_aprx_old = hessian_inv_aprx_cur
-
-                p_cur, hessian_inv_aprx_cur = search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hessian_inv_aprx_old)
-                print(f'p_{k} = {p_cur.reshape(dim_x)}')
-
-                #################################### Step length alpha ####################################
-                alpha = backtracking(func, x_cur, grad_cur, p_cur, k) #### backtracking algorithm ####
-
-                # New point x_new
-                x_new = x_cur + alpha*p_cur
-                grad_new = grad_centraldiff(func, x_new)
-                k = k + 1
-                print(f'x_{k} = {x_new.reshape(dim_x)} / |grad(x_{k})| = {np.linalg.norm(grad_new)}')
-
-        #################################### Complete Optimization ####################################
-        print(f'optimization converges --> x* = {x_new.reshape(dim_x)} / |grad(x*)| = {np.linalg.norm(grad_new)}')
-        return x_new
-    except ValueError as e:
-        print(f'Optimization stopped due to NaN: {e}')
-=======
 ######################### Step length search B) Strong Wolfe's Conditions + Interpolation algorithm- Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
 # interpol_alpha ⊂ bracketing_alpha ⊂ wolfe_strong_interpol
 def interpol_alpha(f, x_cur, p_cur, a, b):
@@ -889,4 +600,3 @@ def quasi_newton_bfgs(f, x0, tol):
 
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
     return x_new
->>>>>>> c1aa413 (step length 알고리즘 backtracking에서 strong wolfe + interpolation으로 변경하고 기존의 optimization 함수들도 수치안정성 관련 개선/exception발생/행렬 계산 자잘한 미스 개선 등 조치해놓음. 습작들은 try_scripts 폴더로 옮기고 breguet_range.ipynb는 breguet 함수 V, h 상하한 관련 코멘트 추가함.)
