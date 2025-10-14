@@ -1,4 +1,4 @@
-############################################# Numerical Optimization 모듈(완성본 모음 - optimization point만 return해주는 함수 버전) #############################################
+############################################# Numerical Optimization 모듈(완성본 모음) #############################################
 import numpy as np
 
 ######################### Central Difference Method - Scalar func / n-dim point x
@@ -284,6 +284,11 @@ def stp_descent(f, x0, tol):
     err = 1
     k = 0
 
+    ############## 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad = [grad0]
+
     ############## Searching iterations
     ###### Update info of current point
     while err > tol:
@@ -309,6 +314,9 @@ def stp_descent(f, x0, tol):
         f_new = f(x_new)
         grad_new = grad_centraldiff(f, x_new)
         err = np.linalg.norm(grad_new)
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad.append(grad_new)
         print(f'x_{k} : {x_new}')
         print(f'f_{k} : {f_new}')
         print(f'norm(grad(x_{k})) : {err}')
@@ -317,7 +325,7 @@ def stp_descent(f, x0, tol):
         print()
 
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
-    return x_new
+    return list_x, list_f, list_grad
 
 def cg_hs(f, x0, tol):
     if type(x0) != np.ndarray:
@@ -351,6 +359,11 @@ def cg_hs(f, x0, tol):
     err = 1
     k = 0
 
+    ############## 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad = [grad0]
+
     ############## Searching iterations
     ###### Update info of current point
     while err > tol:
@@ -379,6 +392,9 @@ def cg_hs(f, x0, tol):
         f_new = f(x_new)
         grad_new = grad_centraldiff(f, x_new)
         err = np.linalg.norm(grad_new)
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad.append(grad_new)
         print(f'x_{k} : {x_new}')
         print(f'f_{k} : {f_new}')
         print(f'norm(grad(x_{k})) : {err}')
@@ -387,7 +403,7 @@ def cg_hs(f, x0, tol):
         print()
 
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
-    return x_new
+    return list_x, list_f, list_grad
 
 def cg_fr(f, x0, tol):
     if type(x0) != np.ndarray:
@@ -421,6 +437,11 @@ def cg_fr(f, x0, tol):
     err = 1
     k = 0
 
+    ############## 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad = [grad0]
+
     ############## Searching iterations
     ###### Update info of current point
     while err > tol:
@@ -449,6 +470,9 @@ def cg_fr(f, x0, tol):
         f_new = f(x_new)
         grad_new = grad_centraldiff(f, x_new)
         err = np.linalg.norm(grad_new)
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad.append(grad_new)
         print(f'x_{k} : {x_new}')
         print(f'f_{k} : {f_new}')
         print(f'norm(grad(x_{k})) : {err}')
@@ -457,7 +481,7 @@ def cg_fr(f, x0, tol):
         print()
 
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
-    return x_new
+    return list_x, list_f, list_grad
 
 def newton(f, x0, tol):
     if type(x0) != np.ndarray:
@@ -491,6 +515,11 @@ def newton(f, x0, tol):
     err = 1
     k = 0
 
+    ############## 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad = [grad0]    
+
     ############## Searching iterations
     ###### Update info of current point
     while err > tol:
@@ -518,6 +547,9 @@ def newton(f, x0, tol):
         f_new = f(x_new)
         grad_new = grad_centraldiff(f, x_new)
         err = np.linalg.norm(grad_new)
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad.append(grad_new)
         print(f'x_{k} : {x_new}')
         print(f'f_{k} : {f_new}')
         print(f'norm(grad(x_{k})) : {err}')
@@ -526,7 +558,7 @@ def newton(f, x0, tol):
         print()
 
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
-    return x_new
+    return list_x, list_f, list_grad
 
 def quasi_newton_bfgs(f, x0, tol):
     if type(x0) != np.ndarray:
@@ -561,6 +593,11 @@ def quasi_newton_bfgs(f, x0, tol):
     err = 1
     k = 0
 
+    ############## 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad = [grad0]
+
     ############## Searching iterations
     ###### Update info of current point
     while err > tol:
@@ -591,6 +628,9 @@ def quasi_newton_bfgs(f, x0, tol):
         f_new = f(x_new)
         grad_new = grad_centraldiff(f, x_new)
         err = np.linalg.norm(grad_new)
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad.append(grad_new)
         print(f'x_{k} : {x_new}')
         print(f'f_{k} : {f_new}')
         print(f'norm(grad(x_{k})) : {err}')
@@ -599,4 +639,4 @@ def quasi_newton_bfgs(f, x0, tol):
         print()
 
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
-    return x_new
+    return list_x, list_f, list_grad
