@@ -166,7 +166,8 @@ def backtracking(func, x, grad_x, p, k):
 ######################### Step length search B) Strong Wolfe's Conditions + Interpolation algorithm- Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
 # interpol_alpha ⊂ bracketing_alpha ⊂ wolfe_strong_interpol
 def interpol_alpha(f, x_cur, p_cur, a, b):
-    
+    # bracketing_alpha에서 계속해서 업데이트되는 구간(alpha_lo, alpha_hi)에 대해, 양단 점을 기반으로 2(3)차 함수로 근사하여 alpha_new 찾는 함수
+    # 이 alpha_new는 bracketing_alpha에서 구간을 새로 업데이트할지 말지, 업데이트한다면 어떤 방향으로 업데이트할 지 판단할 때 사용
     phi_a = f(x_cur + a*p_cur)
     phi_b = f(x_cur + b*p_cur)
     dphi_a = grad_centraldiff(f, x_cur + a*p_cur)@p_cur
@@ -179,30 +180,32 @@ def interpol_alpha(f, x_cur, p_cur, a, b):
     else: # 분모 수치적으로 안정하면
         num = dphi_a*(b - a) # 분자 계산해주고
         alpha_min = a - num/dem # 2차근사식 minimum point 계산식 기반 minimum point 구해준다.
-        alpha_min = np.clip(alpha_min, a + 0.1*(b - a), b - 0.1*(b - a)) # 만약 minimum point가 너무 작은 값이면(유의미한 point 이동 못 이뤄냄) 0.1로, 너무 큰 값(너무 많이 point 이동해도 문제)이면 0.9로 치환한다.
+        alpha_min = np.clip(alpha_min, a + 0.1*(b - a), b - 0.1*(b - a)) # 만약 minimum point가 너무 작은 값이면(유의미한 point 이동 못 이뤄냄) 구간의 10% 지점으로, 너무 큰 값(너무 많이 point 이동해도 문제)이면 구간의 90% 지점으로 치환한다.
         return alpha_min    
 
 # bracketing_alpha ⊂ wolfe_strong_interpol
-def bracketing_alpha(f, x_cur, p_cur, c2_dphi0, phi_armijo, alpha_lo, alpha_hi):
+def bracketing_alpha(f, x_cur, p_cur, c2_dphi0, phi_armijo, alpha_lo, alpha_hi): 
+    # wolfe_strong_interpol에서 확정된 '큰' 골짜기 구간을 기반으로 alpha_optm 찾는 함수
+    # 여기서 추가적으로 구간을 더 작게 업데이트할 수도 있음 -> '작은' 골짜기 구간
     phi_lo = f(x_cur+alpha_lo*p_cur)
 
     for _ in range(50):
-        alpha_new = interpol_alpha(f, x_cur, p_cur, alpha_lo, alpha_hi) # 다항식 보간함수가 최소가 되는 점 alpha_new 구함
+        alpha_new = interpol_alpha(f, x_cur, p_cur, alpha_lo, alpha_hi) # 다항식 보간함수로 골짜기 구간에서의 최소추정점 alpha_new 구함
         phi_new = f(x_cur + alpha_new*p_cur) # alpha_new에서의 함수값
         dphi_new = grad_centraldiff(f, x_cur + alpha_new*p_cur)@p_cur # alpha_new에서의 기울기
 
         if (phi_new > phi_armijo(alpha_new)) | (phi_new >= phi_lo): # alpha_new에서의 함수값이 오히려 증가했다
-            alpha_hi = alpha_new # alpha_optm은 alpha_lo와 alpha_new 사이 존재 -> 구간 [alpha_lo, alpha_new]로 업뎃
+            alpha_hi = alpha_new # alpha_optm은 alpha_lo와 alpha_new 사이 존재 -> '작은' 골짜기 구간 [alpha_lo, alpha_new]로 업뎃
             # alpha_lo unchanged
         else:
             if abs(dphi_new) <= c2_dphi0: # alpha_new에서의 함수값이 감소했고 기울기까지 작다
                 alpha_optm = alpha_new # alpha_new가 alpha_optm
                 return alpha_optm
             elif dphi_new > 0: # alpha_new에서의 함수값이 감소했는데 기울기는 여전히 양수다
-                alpha_hi = alpha_new # alpha_optm은 alpha_lo와 alpha_new 사이 존재 -> 구간 [alpha_lo, alpha_new]로 업뎃
+                alpha_hi = alpha_new # alpha_optm은 alpha_lo와 alpha_new 사이 존재 -> '작은' 골짜기 구간 [alpha_lo, alpha_new]로 업뎃
                 # alpha_lo unchanged
             else: # alpha_new에서의 함수값이 감소했는데 기울기가 음수다
-                alpha_lo = alpha_new # alpha_optm은 alpha_new와 alpha_hi 사이 존재 -> 구간 [alpha_new, alpha_hi]로 업뎃
+                alpha_lo = alpha_new # alpha_optm은 alpha_new와 alpha_hi 사이 존재 -> '작은' 골짜기 구간 [alpha_new, alpha_hi]로 업뎃
                 # alpha_hi unchanged
         
         phi_lo = f(x_cur + alpha_lo*p_cur) # 업뎃된 alpha_lo에서의 함수값 계산
@@ -212,7 +215,7 @@ def bracketing_alpha(f, x_cur, p_cur, c2_dphi0, phi_armijo, alpha_lo, alpha_hi):
     
     return 0.5*(alpha_lo + alpha_hi)
 
-# wolfe_strong_interpol
+# wolfe_strong_interpol - 확실한 '큰' 골짜기 구간을 찾아 거기서 alpha_optm을 찾는 함수
 def wolfe_strong_interpol(f, x_cur, f_cur, grad_cur, p_cur, c2):
     c1 = 1e-4 # Armijo 조건, Curvature 조건용 factors
     alpha_try_old, alpha_try = 0, 1 # Initial bracket of alpha
