@@ -1,8 +1,10 @@
 ############################################# Numerical Optimization 모듈(완성본 모음) #############################################
 import numpy as np
 
-######################### Central Difference Method - Scalar func / n-dim point x
-### scipy.differentiate.derivative(f, x, ...) 함수 사용 가능
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+######################### Derivative/Hessian Caculation #########################
+### Central Difference Method based Gradient - Scalar func / n-dim point x
+# scipy.differentiate.derivative(f, x, ...) 함수 사용 가능
 def grad_centraldiff(f, x):
     x = np.atleast_1d(x)
     rel_step = 1e-6
@@ -18,8 +20,8 @@ def grad_centraldiff(f, x):
         raise ValueError('At least one component of gradient is not finite !')
     return dfdx
 
-######################### Central Difference Method로 함수의 근사 hessian 계산하는 함수
-### scipy.differentiate.hessian(f, x, ...) 함수 사용 가능
+### Central Difference Method based Hessian
+# scipy.differentiate.hessian(f, x, ...) 함수 사용 가능
 def hessian_centraldiff(func, x):
     
     n = len(x)
@@ -51,7 +53,9 @@ def hessian_centraldiff(func, x):
         # raise ValueError('Warning : Hessian approximation includes NaN !')
     return H
 
-######################### Search direction using Steepest Descent Method - Scalar func / n-dim point x
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+######################### Search direction algorithms #########################
+### Search direction using Steepest Descent Method - Scalar func / n-dim point x
 def search_direction_stp_descent(func, x):
     p = -grad_centraldiff(func, x)
 
@@ -60,10 +64,10 @@ def search_direction_stp_descent(func, x):
 
     return p
 
-######################### Search direction using Conjugate Gradient Method - Hestenes Stiefel Formula supplemented by Steepest Descent Method for numerical stability
-######## Nonlinear CG 중 Hestenes-Stiefel algorithm 사용 시 beta 계산에서 분모가 0 되면 폭주 가능.
-######## 따라서 Steepest descent랑 섞어서 그런 부분 방지해야 함.
-### scipy.optimize.minimize(..., method='CG', ...) 함수 사용 가능
+### Search direction using Conjugate Gradient Method - Hestenes Stiefel(CGM-HS) Formula
+# Nonlinear CG 중 Hestenes-Stiefel algorithm 사용 시 beta 계산에서 분모가 0 되면 폭주 가능.
+# 따라서 Steepest descent랑 섞어서 그런 부분 방지해야 함.
+# scipy.optimize.minimize(..., method='CG', ...) 함수 사용 가능
 def search_direction_cg_hs(k, grad_old, grad_cur, p_old):
     if k == 0:
         p = -grad_cur
@@ -81,10 +85,10 @@ def search_direction_cg_hs(k, grad_old, grad_cur, p_old):
 
     return p
 
-######################### Search direction using Conjugate Gradient Method - Fletcher-Reeves Formula
-######## Nonlinear CG 중 Fletcher-Reeves algorithm 사용 시 beta 계산에서 분모가 0 될 일이 없기에 폭주 가능성 없음.
-######## 따라서 Steepest descent랑 섞어서 안 써도 됨. -> 수정 : grad_old가 0에 가까울 시 분모 0 될 수 있음.
-### scipy.optimize.minimize(..., method='CG', ...) 함수 사용 가능
+### Search direction using Conjugate Gradient Method - Fletcher Reeves(CGM-FR) Formula
+# Nonlinear CG 중 Fletcher-Reeves algorithm 사용 시 beta 계산에서 분모가 0 될 일이 없기에 폭주 가능성 없음.
+# 따라서 Steepest descent랑 섞어서 안 써도 됨. -> 수정 : grad_old가 0에 가까울 시 분모 0 될 수 있음.
+# scipy.optimize.minimize(..., method='CG', ...) 함수 사용 가능
 def search_direction_cg_fr(k, grad_old, grad_cur, p_old):
     if k == 0:
         p = -grad_cur
@@ -107,14 +111,14 @@ def search_direction_cg_fr(k, grad_old, grad_cur, p_old):
         
     return p
 
-######################### Search direction using Newton's Method
-######## Hessian이 PD가 아니거나, x0가 x*에서 너무 먼 경우 수렴 보장 X.
+### Search direction using Newton's Method
+# Hessian이 PD가 아니거나, x0가 x*에서 너무 먼 경우 수렴 보장 X.
 def search_direction_newton(grad, hessian):
     p = -np.linalg.solve(hessian, grad)
     return p
 
-######################### Search direction using Conjugate Gradient Method - Fletcher-Reeves Formula
-### scipy.optimize.minimize(..., method='BFGS', ...) 함수 사용 가능
+### Search direction using Quasi-Newton Method - BFGS(QNM-BFGS) Formula
+# scipy.optimize.minimize(..., method='BFGS', ...) 함수 사용 가능
 def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hessian_inv_aprx_old):
     dim_x = len(x_cur)
     if k == 0: # 첫 iteration의 근사 Hessian inverse는 I로 설정
@@ -138,7 +142,9 @@ def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hess
 
     return p, hessian_inv_aprx
 
-######################### Step length search A) Backtracking algorithm - Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+######################### Step length search algorithms #########################
+### Step length search A) Backtracking algorithm - Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
 # backtracking 알고리즘, 더 포괄적으로 step size alpha를 찾는 line search algorithm은 반드시 함수가 명시적으로 주어져야 한다.
 # alpha를 찾기 위해서는 every alpha_try에서 function evaluation을 거쳐야 하기 때문이다.
 def backtracking(func, x, grad_x, p, k):
@@ -163,7 +169,7 @@ def backtracking(func, x, grad_x, p, k):
 
     return alpha
 
-######################### Step length search B) Strong Wolfe's Conditions + Interpolation algorithm- Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
+### Step length search B) Strong Wolfe's Conditions + Interpolation algorithm- Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
 # interpol_alpha ⊂ bracketing_alpha ⊂ wolfe_strong_interpol
 def interpol_alpha(f, x_cur, p_cur, a, b):
     # bracketing_alpha에서 계속해서 업데이트되는 구간(alpha_lo, alpha_hi)에 대해, 양단 점을 기반으로 2(3)차 함수로 근사하여 alpha_new 찾는 함수
@@ -257,25 +263,26 @@ def wolfe_strong_interpol(f, x_cur, f_cur, grad_cur, p_cur, c2):
         alpha_try = 1e-3
     return max(min(alpha_try, 1.0), 1e-6)
 
-######################################################################################################################
-######################### Main Optimization Algorithm #########################
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+######################### Main Optimization Algorithm(Unconstrained) #########################
+### Steepest Descent Method
+# 가장 느리지만 가장 수렴 가능성 높음
 def stp_descent(f, x0, tol):
-    if type(x0) != np.ndarray:
-        raise ValueError('Please input ndarray type !!')
-    elif len(x0.shape) >= 2:
-        raise ValueError('Please input vector type ndarray !! ')
+    ### Check input data type
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input 1D ndarray type !!')
 
+    ### Check f(x0)
     f0 = f(x0)
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
-    else:
-        pass
 
-    ### Check gradient of x0
+    ### Check ∇f(x0)
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
-        # return x0
+        list_x = [x0]; list_f = [f0]; list_grad = [grad0]
+        return list_x, list_f, list_grad
     else:
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
@@ -305,7 +312,7 @@ def stp_descent(f, x0, tol):
         # Search direction check
         if grad_cur@p_cur > 0: # search direction이 증가 방향이면 경고 내보내고 steepest descent direction으로 search direction 변경
             print(f'Warning : grad(x_k)·p_k={grad_cur@p_cur} > 0 : Search direction p_k would likely make function increase !')
-            print(f'Warning : p_k would be replaced with steepest descent direction grad(x0) : {-grad_cur} !')
+            print(f'Warning : p_k would be replaced with steepest descent direction grad(x_k) : {-grad_cur} !')
             p_cur = search_direction_stp_descent(f, x_cur)
 
         ### Step length - by Strong Wolfe + interpolation
@@ -330,23 +337,24 @@ def stp_descent(f, x0, tol):
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
     return list_x, list_f, list_grad
 
+### Congugate Gradient Method - Hestenes Stiefel(CGM-HS)
+# 적당히 빠르고 수렴도 꽤 잘 됨
 def cg_hs(f, x0, tol):
-    if type(x0) != np.ndarray:
-        raise ValueError('Please input ndarray type !!')
-    elif len(x0.shape) >= 2:
-        raise ValueError('Please input vector type ndarray !! ')
+    ### Check input data type
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input 1D ndarray type !!')
 
+    ### Check f(x0)
     f0 = f(x0)
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
-    else:
-        pass
 
-    ### Check gradient of x0
+    ### Check ∇f(x0)
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
-        # return x0
+        list_x = [x0]; list_f = [f0]; list_grad = [grad0]
+        return list_x, list_f, list_grad
     else:
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
@@ -383,7 +391,7 @@ def cg_hs(f, x0, tol):
         # Search direction check
         if grad_cur@p_cur > 0: # search direction이 증가 방향이면 경고 내보내고 steepest descent direction으로 search direction 변경
             print(f'Warning : grad(x_k)·p_k={grad_cur@p_cur} > 0 : Search direction p_k would likely make function increase !')
-            print(f'Warning : p_k would be replaced with steepest descent direction grad(x0) : {-grad_cur} !')
+            print(f'Warning : p_k would be replaced with steepest descent direction grad(x_k) : {-grad_cur} !')
             p_cur = search_direction_stp_descent(f, x_cur)
 
         ### Step length - by Strong Wolfe + interpolation
@@ -408,23 +416,24 @@ def cg_hs(f, x0, tol):
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
     return list_x, list_f, list_grad
 
+### Congugate Gradient Method - Fletcher Reeves(CGM-FR)
+# CGM-HS보다 안정적, 적당한 속도, 더 나은 수렴안정성
 def cg_fr(f, x0, tol):
-    if type(x0) != np.ndarray:
-        raise ValueError('Please input ndarray type !!')
-    elif len(x0.shape) >= 2:
-        raise ValueError('Please input vector type ndarray !! ')
+    ### Check input data type
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input 1D ndarray type !!')
 
+    ### Check f(x0)
     f0 = f(x0)
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
-    else:
-        pass
 
-    ### Check gradient of x0
+    ### Check ∇f(x0)
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
-        # return x0
+        list_x = [x0]; list_f = [f0]; list_grad = [grad0]
+        return list_x, list_f, list_grad
     else:
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
@@ -461,7 +470,7 @@ def cg_fr(f, x0, tol):
         # Search direction check
         if grad_cur@p_cur > 0: # search direction이 증가 방향이면 경고 내보내고 steepest descent direction으로 search direction 변경
             print(f'Warning : grad(x_k)·p_k={grad_cur@p_cur} > 0 : Search direction p_k would likely make function increase !')
-            print(f'Warning : p_k would be replaced with steepest descent direction grad(x0) : {-grad_cur} !')
+            print(f'Warning : p_k would be replaced with steepest descent direction grad(x_k) : {-grad_cur} !')
             p_cur = search_direction_stp_descent(f, x_cur)
 
         ### Step length - by Strong Wolfe + interpolation
@@ -486,23 +495,24 @@ def cg_fr(f, x0, tol):
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
     return list_x, list_f, list_grad
 
+### Newton's method
+# 가장 빠른 수렴속도, 하지만 Hessian 계산량 비쌈, 또한 Hessian PD 아닐 경우 불안정 및 point에 따라 수렴안정성 낮아짐
 def newton(f, x0, tol):
-    if type(x0) != np.ndarray:
-        raise ValueError('Please input ndarray type !!')
-    elif len(x0.shape) >= 2:
-        raise ValueError('Please input vector type ndarray !! ')
+    ### Check input data type
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input 1D ndarray type !!')
 
+    ### Check f(x0)
     f0 = f(x0)
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
-    else:
-        pass
 
-    ### Check gradient of x0
+    ### Check ∇f(x0)
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
-        # return x0
+        list_x = [x0]; list_f = [f0]; list_grad = [grad0]
+        return list_x, list_f, list_grad
     else:
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
@@ -538,7 +548,7 @@ def newton(f, x0, tol):
         # Search direction check
         if grad_cur@p_cur > 0: # search direction이 증가 방향이면 경고 내보내고 steepest descent direction으로 search direction 변경
             print(f'Warning : grad(x_k)·p_k={grad_cur@p_cur} > 0 : Search direction p_k would likely make function increase !')
-            print(f'Warning : p_k would be replaced with steepest descent direction grad(x0) : {-grad_cur} !')
+            print(f'Warning : p_k would be replaced with steepest descent direction grad(x_k) : {-grad_cur} !')
             p_cur = search_direction_stp_descent(f, x_cur)
 
         ### Step length - by Strong Wolfe + interpolation
@@ -563,23 +573,24 @@ def newton(f, x0, tol):
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
     return list_x, list_f, list_grad
 
+### Quasi-Newton's Method - BFGS
+# Newton's method와 유사한 속도, 낮은 근사 Hessian 계산량, Hessain의 PD를 보장하여 수렴안정성 비교적 높음
 def quasi_newton_bfgs(f, x0, tol):
-    if type(x0) != np.ndarray:
-        raise ValueError('Please input ndarray type !!')
-    elif len(x0.shape) >= 2:
-        raise ValueError('Please input vector type ndarray !! ')
+    ### Check input data type
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input 1D ndarray type !!')
 
+    ### Check f(x0)
     f0 = f(x0)
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
-    else:
-        pass
 
-    ### Check gradient of x0
+    ### Check ∇f(x0)
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
-        # return x0
+        list_x = [x0]; list_f = [f0]; list_grad = [grad0]
+        return list_x, list_f, list_grad
     else:
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
@@ -593,7 +604,7 @@ def quasi_newton_bfgs(f, x0, tol):
     f_new = f0
     grad_new = grad0
     
-    err = 1
+    err = 100
     k = 0
 
     ############## 과제용 plot을 위한 log 담기 위한 list
@@ -619,7 +630,7 @@ def quasi_newton_bfgs(f, x0, tol):
         # Search direction check
         if grad_cur@p_cur > 0: # search direction이 증가 방향이면 경고 내보내고 steepest descent direction으로 search direction 변경
             print(f'Warning : grad(x_k)·p_k={grad_cur@p_cur} > 0 : Search direction p_k would likely make function increase !')
-            print(f'Warning : p_k would be replaced with steepest descent direction grad(x0) : {-grad_cur} !')
+            print(f'Warning : p_k would be replaced with steepest descent direction grad(x_k) : {-grad_cur} !')
             p_cur = search_direction_stp_descent(f, x_cur)
 
         ### Step length - by Strong Wolfe + interpolation
@@ -643,3 +654,269 @@ def quasi_newton_bfgs(f, x0, tol):
 
     print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
     return list_x, list_f, list_grad
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+########################## Main Optimization Algorithm(Constrained) ##########################
+### Quadratic Penalty Method(QPM)
+# Heuristic method로서 penalty parameter(mu)를 키워가며 constraint를 잡는 전략
+# penalty parameter(mu)가 너무 커질 경우 inner loop subproblem이 ill-conditioned하게 되어 수렴 불안정.
+def qpm(f, ce, ci, x0, inner_opt, tol):
+    ### Check input data type
+    if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
+        raise ValueError('Please input at least either one equality or inequality constraint as list type ! ; Empty list is OK as well.')
+
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input x0 as 1D ndarray type !!')
+    
+    ### Check inner loop optimizer
+    if inner_opt == 0:
+        inner_opt = stp_descent
+    elif inner_opt == 1:
+        inner_opt = cg_hs
+    elif inner_opt == 2:
+        inner_opt = cg_fr
+    elif inner_opt == 3:
+        inner_opt = quasi_newton_bfgs
+    else:
+        raise ValueError('Please input correct integer for inner_opt ! ; 0:stp_descent, 1:cg_hs, 2:cg_fr, 3:quasi_newton_bfgs')
+
+    ### Check f(x0)
+    f0 = f(x0)
+    if not np.isfinite(f0).all():
+        raise ValueError('Function value at x0 is not finite. Try another x0 !')
+
+    ### Check ci(x0) ≥ 0
+    if len(ci) >= 1: # 부등호제약조건은 feasibility 고려하고 등호제약조건은 미고려(∵ exactly하게 맞추기가 더 어려움)
+        infeasible_ci = [ci_i(x0) for ci_i in ci if ci_i(x0) < 0] # infeasible criteria of c
+        if len(infeasible_ci) >= 1:
+            raise ValueError(f'Infeasible x0 for {len(infeasible_ci)} of {len(ci)} inequality constraint(s). Try feasible x0 !')
+
+    ### Check ∇f(x0)
+    grad0 = grad_centraldiff(f, x0)
+    if np.linalg.norm(grad0) < tol: # Check optimality
+        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        # return x0
+
+    ### Initialization for searching iterations
+    x_new = x0
+    # Parameter setting for QPM
+    if len(ce) == 0: # quadratic penalty term of equality constraints for Qk
+        sum_ce_sq = lambda x : 0 # If no equality constraints -> No term of ce for Qk
+    else:
+        sum_ce_sq = lambda x : np.sum([(ce_i(x))**2 for ce_i in ce]) # Equality constraints exist -> sum(c_e(x)^2) for Qk
+
+    if len(ci) == 0: # quadratic penalty term of inequality constraints for Qk
+        sum_ci_sq = lambda x : 0 # If no inequality constraints -> No term of ci for Qk
+    else:
+        sum_ci_sq = lambda x : np.sum([(np.max([-ci_i(x), 0]))**2 for ci_i in ci]) # sum(c_i(x)^2) for Qk
+
+    f_mu = 5; mu_new = 1 # increase factor for penalty parameter mu ; mu0 = 1
+    f_tau = .5; tau_new = .2 # decrease factor for convergence criteria for Qk ; tau0 = .2
+
+    ### 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_ce = [[ce_i(x0) for ce_i in ce]]
+    list_ci = [[ci_i(x0) for ci_i in ci]]
+
+    ### Outer loop begins
+    for j in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
+        # Finding a x*_k in Qk
+        x_cur = x_new # x_k
+        mu_cur = mu_new; print(f'mu_{j} = {mu_cur}') # penalty parameter update(increase)
+        tau_cur = tau_new; print(f'tau_{j} = {tau_cur}') # Qk convergence criteria update(decrease)
+        Q_cur = lambda x : f(x) + .5*mu_cur*sum_ce_sq(x) + .5*mu_cur*sum_ci_sq(x) # quadratic penalty function Qk at x_k
+        log_inner = inner_opt(Q_cur, x_cur, tau_cur) # Solving ∇Qk(x*_k) ≤ tau_k ; Inner loop
+        x_new = log_inner[0][-1]; f_new = f(x_new); ce_new = [ce_i(x_new) for ce_i in ce]; ci_new = [ci_i(x_new) for ci_i in ci]
+        mu_new = mu_cur*f_mu
+        tau_new = tau_cur*f_tau
+
+        # Convergence check of x* ... QPM을 위한 convergence 기준은 명확한 게 없음. 애초에 휴리스틱 알고리즘이라 근본이 없는 놈이라 그럼.
+        move_x = np.linalg.norm(x_new - x_cur) # convergence criteria of x*_k
+        violated_ce = [ce_new_i for ce_new_i in ce_new if np.abs(ce_new_i) > 1e-4] # violation criteria of ce(x*_k)
+        violated_ci = [ci_new_i for ci_new_i in ci_new if ci_new_i < -1e-4] # violation criteria of ci(x*_k)
+        if (move_x < 1e-4) & (len(violated_ci) == 0) & (len(violated_ce) == 0):
+            done = True # flag for termination of outerloop
+        else:
+            done = False
+
+        print(f'{j+1}-th outer loop : Inner loop converges at {len(log_inner[0]) - 1} iteration(s) ...')
+        print(f'|x_{j+1} - x_{j}| = {move_x}')
+        print(f'# of violated ce constraints : {len(violated_ce)}, violation : {np.sum(violated_ce)}')
+        print(f'# of violated ci constraints : {len(violated_ci)}, violation : {np.sum(violated_ci)}')
+        print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
+
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_ce.append(ce_new)
+        list_ci.append(ci_new)
+
+        if done:
+            print(f'Outer loop converged at {j+1} iteration(s) !')
+            print(f'iter = {j+1} x* = {x_new}, f(x*) = {f(x_new)}, |ce(x*)|₁ = {np.sum(np.abs(ce_new))}, |ci(x*)|₁ = {np.sum(np.abs(ci_new))}')
+            return list_x, list_f, list_ce, list_ci
+
+### Augmented Lagrangian Method(ALM)
+# KKT conditions based on Lagrangian function 개념을 활용하여 비교적 작은 penalty method(mu, rho)로도 안정적 수렴 가능.
+
+def alm(f, ce, ci, x0, inner_opt, tol):
+    ### Check input data type
+    if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
+        raise ValueError('Please input at least either one equality or inequality constraint as list type ! ; Empty list is OK as well.')
+
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input x0 as 1D ndarray type !!')
+
+    ### Check inner loop optimizer
+    if inner_opt == 0:
+        inner_opt = stp_descent
+    elif inner_opt == 1:
+        inner_opt = cg_hs
+    elif inner_opt == 2:
+        inner_opt = cg_fr
+    elif inner_opt == 3:
+        inner_opt = quasi_newton_bfgs
+    else:
+        raise ValueError('Please input correct integer for inner_opt ! ; 0:stp_descent, 1:cg_hs, 2:cg_fr, 3:quasi_newton_bfgs')
+
+    ### Check f(x0)
+    f0 = f(x0)
+    if not np.isfinite(f0).all():
+        raise ValueError('Function value at x0 is not finite. Try another x0 !')
+
+    ### Check ci(x0) ≥ 0
+    if len(ci) >= 1: # 부등호제약조건은 feasibility 고려하고 등호제약조건은 미고려(∵ exactly하게 맞추기가 더 어려움)
+        infeasible_ci = [ci_j(x0) for ci_j in ci if ci_j(x0) < 0] # infeasible criteria of c
+        if len(infeasible_ci) >= 1:
+            raise ValueError(f'Infeasible x0 for {len(infeasible_ci)} of {len(ci)} inequality constraint(s). Try feasible x0 !')
+
+    ### Check ∇f(x0)
+    grad0 = grad_centraldiff(f, x0)
+    if np.linalg.norm(grad0) < tol: # Check optimality
+        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        # return x0
+
+    ### Initialization for searching iterations
+    x_new = x0
+
+    ### Parameter setting for ALM
+    # Final tolerance for outer loop
+    tol_eq_final = 1e-6 # equality feasibility
+    tol_ineq_final = 1e-6 # inequality feasibility
+    tol_opt_final = 1e-6 # optimality (∥∇L_A∥∞)
+    tol_step_final = 1e-8 # step size (relative factor 포함 권장)
+
+    # Initial tolearnce of constraints for outer loop(점차 tighten)
+    tol_eq   = 1e-3
+    tol_ineq = 1e-3
+
+    # Tolerance update scheme for inner loop : tau_k = max(omega_min, omega0 * (omega_decay)^k)
+    omega0 = 1e-2
+    omega_decay = 0.5
+    omega_min = tol_opt_final
+    tau = omega0   # == tau_0
+
+    # Penalty parameter increase factor / upper bound
+    factor_mu  = 5.0
+    factor_rho = 5.0
+    mu_max   = 1e8
+    rho_max  = 1e8
+
+    lmbda = np.array([0]*len(ce)) # initial lagrange multipliers of equality constraints for Lk
+    nu = np.array([0]*len(ci)) # initial lagrange multipliers of inequality constraints
+    mu = 1 # increase factor for equality constraint penalty parameter mu ; mu0 = 1
+    rho = 1 # increase factor for inequality constraint penalty parameter rho ; rho0 = 1
+
+    ### 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad = [grad0]
+    list_ce = [[ce_i(x0) for ce_i in ce]]
+    list_ci = [[ci_i(x0) for ci_i in ci]]
+
+    ### Outer loop begins
+    for k in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
+        x_cur = x_new # x_k
+        print(f'mu_{k} = {mu}')
+        print(f'rho_{k} = {rho}')
+        print(f'tau_{k} = {tau}')
+
+        # penalty term update depending on the cases
+        if (len(ce) >= 1) & (len(ci) >= 1): # both ci, ce exist in opt
+            penalty_ce = lambda x : -lmbda@np.array([ce_j(x) for ce_j in ce]) + .5*mu*np.sum(np.array([ce_j(x)**2 for ce_j in ce]))
+            penalty_ci = lambda x : (-nu@np.array([ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0) for j, ci_j in enumerate(ci)]) +
+                                    .5*rho*np.sum(np.array([(ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0))**2 for j, ci_j in enumerate(ci)])))
+        elif len(ce) >= 1: # only ce exists in opt
+            penalty_ce = lambda x : -lmbda@np.array([ce_j(x) for ce_j in ce]) + .5*mu*np.sum(np.array([ce_j(x)**2 for ce_j in ce]))
+            penalty_ci = lambda x : 0
+        else: # only ci exists in opt
+            penalty_ce = lambda x : 0
+            penalty_ci = lambda x : (-nu@np.array([ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0) for j, ci_j in enumerate(ci)]) +
+                                    .5*rho*np.sum(np.array([(ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0))**2 for j, ci_j in enumerate(ci)])))
+
+        LA_cur = lambda x : f(x) + penalty_ce(x) + penalty_ci(x) # augmented lagrangian function LAk at x_k
+        log_inner = inner_opt(LA_cur, x_cur, tau) # solving ∇LAk(x*_k) ≤ tau_k ; Inner loop
+        x_new = log_inner[0][-1]
+        f_new = f(x_new)
+        ce_new = np.array([ce_j(x_new) for ce_j in ce])
+        ci_new = np.array([ci_j(x_new) for ci_j in ci])
+        grad_LA_new = log_inner[-1][-1]
+
+        # residual(잔차) 계산
+        r_ce = np.max(np.abs(ce_new)) if len(ce_new) >= 1 else 0 # 등호제약조건 잔차(위반)
+        r_ci = np.max(np.maximum(-ci_new, 0)) if len(ci_new) >= 1 else 0 # 부등호제약조건 잔차(위반)
+        r_grad_LA = np.max(grad_LA_new) # ∇L_A 수준
+        r_step = np.linalg.norm(x_new - x_cur) # x_new - x_cur 거리
+
+        # Convergence check for Outer loop
+        if ((r_ce <= tol_eq_final) & # 등호제약조건 위반이 충분히 작고
+            (r_ci <= tol_ineq_final) & # 부등호제약조건 위반도 충분히 작고
+            (r_grad_LA <= tol_opt_final) & # ∇L_A도 충분히 정칙점에 도달했고
+            (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
+            done = True # outer loop 종료 flag 마킹하자
+        else:
+            done = False
+
+        # ---- penalty parameter update(keep or increase) ----
+        # ce
+        if r_ce <= tol_eq:
+            mu = mu # 등호제약조건 위반이 충분히 작다면 페널티 파라미터를 그대로 두자
+        else:
+            mu = min(factor_mu*mu, mu_max) # 등호제약조건 위반이 크다면 페널티 파라미터를 증가시키자
+
+        # ci
+        if r_ci <= tol_ineq:
+            rho = rho # 부등호제약조건 위반이 충분히 작다면 페널티 파라미터를 그대로 두자
+        else:
+            rho = min(factor_rho*rho, rho_max) # 부등호제약조건 위반이 크다면 페널티 파라미터를 증가시키자
+
+        # ---- tolerance update ----
+        # If 제약조건 잔차 ≈ 0 and ∇L_A ≈ 0 -> 제약조건 tolerance를 조금 더 빡세게 두자(감소시키자)
+        if (r_ce <= 0.3*tol_eq) & (r_ci <= 0.3*tol_ineq) & (r_grad_LA <= 0.3*tau):
+            tol_eq = max(tol_eq_final,   0.5*tol_eq)
+            tol_ineq = max(tol_ineq_final, 0.5*tol_ineq)
+
+        # 내부 허용치 스케줄(항상 단조 감소)
+        tau = max(omega_min, omega_decay*tau)
+
+        # ---------------------------------------- print log ----------------------------------------
+        print(f'{k+1}-th outer loop : Inner loop converges at {len(log_inner[0]) - 1} iteration(s) ...')
+        print(f'|x_{k+1} - x_{k}| = {r_step}')
+        print(f'Max violation of equality constraints : {r_ce}')
+        print(f'Max violation of inequality constraints : {r_ci}')
+        print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
+
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad.append(grad_LA_new)
+        list_ce.append(ce_new)
+        list_ci.append(ci_new)
+
+        if done:
+            print(f'Outer loop converges at {k+1} iteration(s) !')
+            print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+            return list_x, list_f, list_grad, list_ce, list_ci
+        
+    print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
+    print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+    return list_x, list_f, list_grad, list_ce, list_ci
