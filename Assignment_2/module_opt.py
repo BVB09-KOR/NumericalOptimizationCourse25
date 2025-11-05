@@ -1,5 +1,7 @@
 ############################################# Numerical Optimization 모듈(완성본 모음) #############################################
 import numpy as np
+import io
+import contextlib
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ######################### Derivative/Hessian Caculation #########################
@@ -697,18 +699,18 @@ def qpm(f, ce, ci, x0, inner_opt, tol):
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         # return x0
 
+    ### constraints manipulation
+    if len(ce) == 0:
+        ce = [lambda x : 0]
+    if len(ci) == 0:
+        ci = [lambda x : 0]
+
     ### Initialization for searching iterations
     x_new = x0
     # Parameter setting for QPM
-    if len(ce) == 0: # quadratic penalty term of equality constraints for Qk
-        sum_ce_sq = lambda x : 0 # If no equality constraints -> No term of ce for Qk
-    else:
-        sum_ce_sq = lambda x : np.sum([(ce_i(x))**2 for ce_i in ce]) # Equality constraints exist -> sum(c_e(x)^2) for Qk
-
-    if len(ci) == 0: # quadratic penalty term of inequality constraints for Qk
-        sum_ci_sq = lambda x : 0 # If no inequality constraints -> No term of ci for Qk
-    else:
-        sum_ci_sq = lambda x : np.sum([(np.max([-ci_i(x), 0]))**2 for ci_i in ci]) # sum(c_i(x)^2) for Qk
+    # Qk 만들 때 필요한 quadratic penalty term of constraints 미리 정의
+    sum_ce_sq = lambda x : np.sum([(ce_i(x))**2 for ce_i in ce]) # sum(c_e(x)^2) for Qk
+    sum_ci_sq = lambda x : np.sum([(np.max([-ci_i(x), 0]))**2 for ci_i in ci]) # sum(c_i(x)^2) for Qk
 
     f_mu = 5; mu_new = 1 # increase factor for penalty parameter mu ; mu0 = 1
     f_tau = .5; tau_new = .2 # decrease factor for convergence criteria for Qk ; tau0 = .2
@@ -796,6 +798,12 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         # return x0
 
+    ### constraints manipulation
+    if len(ce) == 0:
+        ce = [lambda x : 0]
+    if len(ci) == 0:
+        ci = [lambda x : 0]
+
     ### Initialization for searching iterations
     x_new = x0
 
@@ -833,6 +841,8 @@ def alm(f, ce, ci, x0, inner_opt, tol):
     list_grad = [grad0]
     list_ce = [[ce_i(x0) for ce_i in ce]]
     list_ci = [[ci_i(x0) for ci_i in ci]]
+    list_lmbda = [lmbda]
+    list_nu = [nu]
 
     ### Outer loop begins
     for k in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
@@ -841,18 +851,10 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         print(f'rho_{k} = {rho}')
         print(f'tau_{k} = {tau}')
 
-        # penalty term update depending on the cases
-        if (len(ce) >= 1) & (len(ci) >= 1): # both ci, ce exist in opt
-            penalty_ce = lambda x : -lmbda@np.array([ce_j(x) for ce_j in ce]) + .5*mu*np.sum(np.array([ce_j(x)**2 for ce_j in ce]))
-            penalty_ci = lambda x : (-nu@np.array([ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0) for j, ci_j in enumerate(ci)]) +
-                                    .5*rho*np.sum(np.array([(ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0))**2 for j, ci_j in enumerate(ci)])))
-        elif len(ce) >= 1: # only ce exists in opt
-            penalty_ce = lambda x : -lmbda@np.array([ce_j(x) for ce_j in ce]) + .5*mu*np.sum(np.array([ce_j(x)**2 for ce_j in ce]))
-            penalty_ci = lambda x : 0
-        else: # only ci exists in opt
-            penalty_ce = lambda x : 0
-            penalty_ci = lambda x : (-nu@np.array([ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0) for j, ci_j in enumerate(ci)]) +
-                                    .5*rho*np.sum(np.array([(ci_j(x) - np.max(ci_j(x) - nu[j]/rho, 0))**2 for j, ci_j in enumerate(ci)])))
+        # penalty term update
+        penalty_ce = lambda x : -lmbda@np.array([ce_j(x) for ce_j in ce]) + .5*mu*np.sum(np.array([ce_j(x)**2 for ce_j in ce]))
+        penalty_ci = lambda x : (-nu@np.array([ci_j(x) - np.maximum(ci_j(x) - nu[j]/rho, 0) for j, ci_j in enumerate(ci)]) +
+                                    .5*rho*np.sum(np.array([(ci_j(x) - np.maximum(ci_j(x) - nu[j]/rho, 0))**2 for j, ci_j in enumerate(ci)])))
 
         LA_cur = lambda x : f(x) + penalty_ce(x) + penalty_ci(x) # augmented lagrangian function LAk at x_k
         log_inner = inner_opt(LA_cur, x_cur, tau) # solving ∇LAk(x*_k) ≤ tau_k ; Inner loop
@@ -860,12 +862,19 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         f_new = f(x_new)
         ce_new = np.array([ce_j(x_new) for ce_j in ce])
         ci_new = np.array([ci_j(x_new) for ci_j in ci])
+
+        # --- multiplier updates (AFTER computing ce_new, ci_new) ---
+        if len(ce) >= 1:
+            lmbda = lmbda - mu * ce_new
+        if len(ci) >= 1:
+            nu = np.maximum(nu - rho * ci_new, 0.0)
+
         grad_LA_new = log_inner[-1][-1]
 
         # residual(잔차) 계산
         r_ce = np.max(np.abs(ce_new)) if len(ce_new) >= 1 else 0 # 등호제약조건 잔차(위반)
         r_ci = np.max(np.maximum(-ci_new, 0)) if len(ci_new) >= 1 else 0 # 부등호제약조건 잔차(위반)
-        r_grad_LA = np.max(grad_LA_new) # ∇L_A 수준
+        r_grad_LA = np.linalg.norm(grad_LA_new, ord=np.inf) # ∇L_A 수준
         r_step = np.linalg.norm(x_new - x_cur) # x_new - x_cur 거리
 
         # Convergence check for Outer loop
@@ -911,12 +920,187 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         list_grad.append(grad_LA_new)
         list_ce.append(ce_new)
         list_ci.append(ci_new)
+        list_lmbda.append(lmbda)
+        list_nu.append(nu)
 
         if done:
             print(f'Outer loop converges at {k+1} iteration(s) !')
             print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
-            return list_x, list_f, list_grad, list_ce, list_ci
+            return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
         
     print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
     print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
-    return list_x, list_f, list_grad, list_ce, list_ci
+    return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
+
+def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol):
+    ### Check input data type
+    if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
+        raise ValueError('Please input at least either one equality or inequality constraint as list type ! ; Empty list is OK as well.')
+
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input x0 as 1D ndarray type !!')
+
+    ### Check inner loop optimizer
+    if inner_opt == 0:
+        inner_opt = stp_descent
+    elif inner_opt == 1:
+        inner_opt = cg_hs
+    elif inner_opt == 2:
+        inner_opt = cg_fr
+    elif inner_opt == 3:
+        inner_opt = quasi_newton_bfgs
+    else:
+        raise ValueError('Please input correct integer for inner_opt ! ; 0:stp_descent, 1:cg_hs, 2:cg_fr, 3:quasi_newton_bfgs')
+
+    ### Check f(x0)
+    f0 = f(x0)
+    if not np.isfinite(f0).all():
+        raise ValueError('Function value at x0 is not finite. Try another x0 !')
+
+    # ### Check ci(x0) ≥ 0
+    # if len(ci) >= 1: # 부등호제약조건은 feasibility 고려하고 등호제약조건은 미고려(∵ exactly하게 맞추기가 더 어려움)
+    #     infeasible_ci = [ci_j(x0) for ci_j in ci if ci_j(x0) < 0] # infeasible criteria of c
+    #     if len(infeasible_ci) >= 1:
+    #         raise ValueError(f'Infeasible x0 for {len(infeasible_ci)} of {len(ci)} inequality constraint(s). Try feasible x0 !')
+
+    ### Check ∇f(x0)
+    grad0 = grad_centraldiff(f, x0)
+    if np.linalg.norm(grad0) < tol: # Check optimality
+        # print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        # return x0
+        pass
+    
+    ### constraints manipulation
+    if len(ce) == 0:
+        ce = [lambda x : 0]
+    if len(ci) == 0:
+        ci = [lambda x : 0]
+
+    ### Initialization for searching iterations
+    x_new = x0
+
+    ### Parameter setting for ALM
+    # Final tolerance for outer loop
+    tol_eq_final = 1e-6 # equality feasibility
+    tol_ineq_final = 1e-6 # inequality feasibility
+    tol_opt_final = 1e-6 # optimality (∥∇L_A∥∞)
+    tol_step_final = 1e-8 # step size (relative factor 포함 권장)
+
+    # Initial tolearnce of constraints for outer loop(점차 tighten)
+    tol_eq   = 1e-3
+    tol_ineq = 1e-3
+
+    # Tolerance update scheme for inner loop : tau_k = max(omega_min, omega0 * (omega_decay)^k)
+    omega0 = 1e-2
+    omega_decay = 0.5
+    omega_min = tol_opt_final
+    tau = omega0   # == tau_0
+
+    # Penalty parameter increase factor / upper bound
+    factor_mu  = 5.0
+    factor_rho = 5.0
+    mu_max   = 1e8
+    rho_max  = 1e8
+
+    lmbda = lmbda0 # initial lagrange multipliers of equality constraints for Lk
+    nu = nu0 # initial lagrange multipliers of inequality constraints
+    mu = 1 # increase factor for equality constraint penalty parameter mu ; mu0 = 1
+    rho = 1 # increase factor for inequality constraint penalty parameter rho ; rho0 = 1
+
+    ### 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad = [grad0]
+    list_ce = [[ce_i(x0) for ce_i in ce]]
+    list_ci = [[ci_i(x0) for ci_i in ci]]
+    list_lmbda = [lmbda]
+    list_nu = [nu]
+
+    ### Outer loop begins
+    for k in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
+        x_cur = x_new # x_k
+        # print(f'mu_{k} = {mu}')
+        # print(f'rho_{k} = {rho}')
+        # print(f'tau_{k} = {tau}')
+
+        # penalty term update
+        penalty_ce = lambda x : -lmbda@np.array([ce_j(x) for ce_j in ce]) + .5*mu*np.sum(np.array([ce_j(x)**2 for ce_j in ce]))
+        penalty_ci = lambda x : (-nu@np.array([ci_j(x) - np.maximum(ci_j(x) - nu[j]/rho, 0) for j, ci_j in enumerate(ci)]) +
+                                    .5*rho*np.sum(np.array([(ci_j(x) - np.maximum(ci_j(x) - nu[j]/rho, 0))**2 for j, ci_j in enumerate(ci)])))
+
+        LA_cur = lambda x : f(x) + penalty_ce(x) + penalty_ci(x) # augmented lagrangian function LAk at x_k
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            log_inner = inner_opt(LA_cur, x_cur, tau) # solving ∇LAk(x*_k) ≤ tau_k ; Inner loop
+        x_new = log_inner[0][-1]
+        f_new = f(x_new)
+        ce_new = np.array([ce_j(x_new) for ce_j in ce])
+        ci_new = np.array([ci_j(x_new) for ci_j in ci])
+
+        # --- multiplier updates (AFTER computing ce_new, ci_new) ---
+        if len(ce) >= 1:
+            lmbda = lmbda - mu * ce_new
+        if len(ci) >= 1:
+            nu = np.maximum(nu - rho * ci_new, 0.0)
+
+        grad_LA_new = log_inner[-1][-1]
+
+        # residual(잔차) 계산
+        r_ce = np.max(np.abs(ce_new)) if len(ce_new) >= 1 else 0 # 등호제약조건 잔차(위반)
+        r_ci = np.max(np.maximum(-ci_new, 0)) if len(ci_new) >= 1 else 0 # 부등호제약조건 잔차(위반)
+        r_grad_LA = np.linalg.norm(grad_LA_new, ord=np.inf) # ∇L_A 수준
+        r_step = np.linalg.norm(x_new - x_cur) # x_new - x_cur 거리
+
+        # Convergence check for Outer loop
+        if ((r_ce <= tol_eq_final) & # 등호제약조건 위반이 충분히 작고
+            (r_ci <= tol_ineq_final) & # 부등호제약조건 위반도 충분히 작고
+            (r_grad_LA <= tol_opt_final) & # ∇L_A도 충분히 정칙점에 도달했고
+            (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
+            done = True # outer loop 종료 flag 마킹하자
+        else:
+            done = False
+
+        # ---- penalty parameter update(keep or increase) ----
+        # ce
+        if r_ce <= tol_eq:
+            mu = mu # 등호제약조건 위반이 충분히 작다면 페널티 파라미터를 그대로 두자
+        else:
+            mu = min(factor_mu*mu, mu_max) # 등호제약조건 위반이 크다면 페널티 파라미터를 증가시키자
+
+        # ci
+        if r_ci <= tol_ineq:
+            rho = rho # 부등호제약조건 위반이 충분히 작다면 페널티 파라미터를 그대로 두자
+        else:
+            rho = min(factor_rho*rho, rho_max) # 부등호제약조건 위반이 크다면 페널티 파라미터를 증가시키자
+
+        # ---- tolerance update ----
+        # If 제약조건 잔차 ≈ 0 and ∇L_A ≈ 0 -> 제약조건 tolerance를 조금 더 빡세게 두자(감소시키자)
+        if (r_ce <= 0.3*tol_eq) & (r_ci <= 0.3*tol_ineq) & (r_grad_LA <= 0.3*tau):
+            tol_eq = max(tol_eq_final,   0.5*tol_eq)
+            tol_ineq = max(tol_ineq_final, 0.5*tol_ineq)
+
+        # 내부 허용치 스케줄(항상 단조 감소)
+        tau = max(omega_min, omega_decay*tau)
+
+        # # ---------------------------------------- print log ----------------------------------------
+        # print(f'{k+1}-th outer loop : Inner loop converges at {len(log_inner[0]) - 1} iteration(s) ...')
+        # print(f'|x_{k+1} - x_{k}| = {r_step}')
+        # print(f'Max violation of equality constraints : {r_ce}')
+        # print(f'Max violation of inequality constraints : {r_ci}')
+        # print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
+
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad.append(grad_LA_new)
+        list_ce.append(ce_new)
+        list_ci.append(ci_new)
+        list_lmbda.append(lmbda)
+        list_nu.append(nu)
+
+        if done:
+            # print(f'Outer loop converges at {k+1} iteration(s) !')
+            # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+            return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
+        
+    # print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
+    # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+    return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
