@@ -3,8 +3,7 @@ import numpy as np
 import io
 import contextlib
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-######################### Derivative/Hessian Caculation #########################
+# --------------------------------------------------------------------------Derivative/Hessian Caculation----------------------------------------------------
 ### Central Difference Method based Gradient - Scalar func / n-dim point x
 # scipy.differentiate.derivative(f, x, ...) 함수 사용 가능
 def grad_centraldiff(f, x):
@@ -55,8 +54,7 @@ def hessian_centraldiff(func, x):
         # raise ValueError('Warning : Hessian approximation includes NaN !')
     return H
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-######################### Search direction algorithms #########################
+# --------------------------------------------------------------------------Search direction algorithms--------------------------------------------------------------
 ### Search direction using Steepest Descent Method - Scalar func / n-dim point x
 def search_direction_stp_descent(func, x):
     p = -grad_centraldiff(func, x)
@@ -144,8 +142,97 @@ def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hess
 
     return p, hessian_inv_aprx
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-######################### Step length search algorithms #########################
+def damped_bfgs(H, s, y, *, c=0.2, eps=1e-12, eig_floor=0.0, symmetrize=True):
+    """
+    Powell-damped BFGS update for the Hessian (NOT the inverse).
+    
+    Parameters
+    ----------
+    H : (n,n) ndarray
+        Current symmetric (preferably PD) Hessian approximation.
+    s : (n,) ndarray
+        Step: s_k = x_{k+1} - x_k.
+    y : (n,) ndarray
+        Gradient diff: y_k = ∇L(x_{k+1},λ_{k+1},ν_{k+1}) - ∇L(x_k,λ_{k+1},ν_{k+1}).
+    c : float, default 0.2
+        Powell damping curvature threshold; use 0.2 classically.
+    eps : float, default 1e-12
+        Small positive number to protect denominators.
+    eig_floor : float, default 0.0
+        If >0, floor the minimal eigenvalue to this value (very light regularization).
+    symmetrize : bool, default True
+        If True, enforce symmetry by (H+H.T)/2 at the end.
+
+    Returns
+    -------
+    H_next : (n,n) ndarray
+        Updated Hessian approximation.
+    info : dict
+        Diagnostics: {'theta':..., 'sHs':..., 'sTy':..., 'sTyt':..., 'skipped':bool}
+    """
+    s = np.asarray(s, dtype=float).reshape(-1)
+    y = np.asarray(y, dtype=float).reshape(-1)
+    H = np.asarray(H, dtype=float)
+
+    # Precompute quadratic forms
+    Hs   = H @ s
+    sHs  = float(s @ Hs)
+    sTy  = float(s @ y)
+
+    info = {'theta': 1.0, 'sHs': sHs, 'sTy': sTy, 'sTyt': None, 'skipped': False}
+
+    # If s is (near) zero or H is ill-defined in s-direction, skip
+    if sHs <= eps or np.linalg.norm(s) <= eps:
+        # very defensive: tiny regularization
+        H_next = H + eig_floor * np.eye(H.shape[0]) if eig_floor > 0 else H.copy()
+        if symmetrize:
+            H_next = 0.5*(H_next + H_next.T)
+        info['skipped'] = True
+        return H_next, info
+
+    # ----- Powell damping -----
+    # theta = 1 if s^T y >= c * s^T H s, else theta = 0.8 * s^T H s / (s^T H s - s^T y)
+    if sTy >= c * sHs:
+        theta = 1.0
+    else:
+        denom = sHs - sTy
+        if denom <= eps:  # pathological; fall back to no update or minimal damping
+            theta = 0.0  # forces ytilde = Hs
+        else:
+            theta = ( (1.0 - c) * sHs ) / denom  # 0.8 = (1-c) when c=0.2
+    ytil = theta * y + (1.0 - theta) * Hs
+
+    sTyt = float(s @ ytil)
+    info['theta'] = float(theta)
+    info['sTyt']  = sTyt
+
+    # If still violating curvature or too small, skip safely
+    if sTyt <= eps:
+        H_next = H + eig_floor * np.eye(H.shape[0]) if eig_floor > 0 else H.copy()
+        if symmetrize:
+            H_next = 0.5*(H_next + H_next.T)
+        info['skipped'] = True
+        return H_next, info
+
+    # ----- Rank-2 BFGS update on Hessian -----
+    # H_{k+1} = H_k - (H s s^T H) / (s^T H s) + (ytil ytil^T) / (s^T ytil)
+    term1 = np.outer(Hs, Hs) / max(sHs, eps)
+    term2 = np.outer(ytil, ytil) / max(sTyt, eps)
+    H_next = H - term1 + term2
+
+    # Optional tiny eigenvalue floor (very mild, for robustness)
+    if eig_floor > 0.0:
+        # project to ≥ eig_floor if needed
+        w, V = np.linalg.eigh(0.5*(H_next + H_next.T))
+        w = np.maximum(w, eig_floor)
+        H_next = (V * w) @ V.T
+
+    if symmetrize:
+        H_next = 0.5*(H_next + H_next.T)
+
+    return H_next, info
+
+# ---------------------------------------------------------------------------Step length search algorithms---------------------------------------------------------------
 ### Step length search A) Backtracking algorithm - Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
 # backtracking 알고리즘, 더 포괄적으로 step size alpha를 찾는 line search algorithm은 반드시 함수가 명시적으로 주어져야 한다.
 # alpha를 찾기 위해서는 every alpha_try에서 function evaluation을 거쳐야 하기 때문이다.
@@ -265,8 +352,142 @@ def wolfe_strong_interpol(f, x_cur, f_cur, grad_cur, p_cur, c2):
         alpha_try = 1e-3
     return max(min(alpha_try, 1.0), 1e-6)
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-######################### Main Optimization Algorithm(Unconstrained) #########################
+def steplength_merit(f, ce, ci, x_k, pk, lmbda, nu,
+                     sigma=1.0, c1=1e-4, c2=0.9, alpha0=1.0, tau=0.5, tol=1e-12):
+    """
+    Line search with L1-merit function for SQP (Wolfe-type, backtracking).
+
+    Parameters
+    ----------
+    f : callable
+        Objective function f(x).
+    ce : list[callable]
+        Equality constraint list (ce_i(x) = 0).
+    ci : list[callable]
+        Inequality constraint list (ci_j(x) ≥ 0; "more-than" form).
+    x_k : ndarray
+        Current design variable.
+    pk : ndarray
+        Search direction p_k (typically from QP_k solution).
+    lmbda, nu : ndarray
+        Lagrange multipliers of equality/inequality constraints.
+    sigma : float, optional
+        Penalty weight (usually σ ≥ ||λ||∞ + ||ν||∞ + 1).
+    c1, c2 : float, optional
+        Wolfe condition parameters (default 1e-4, 0.9).
+    alpha0 : float, optional
+        Initial step length (default 1.0).
+    tau : float, optional
+        Backtracking reduction factor (default 0.5).
+    tol : float, optional
+        Small number to prevent zero divisions.
+
+    Returns
+    -------
+    alpha : float
+        Step length satisfying merit decrease condition.
+    info : dict
+        {'phi0':..., 'phi(alpha)':..., 'alpha_final':..., 'n_iter':...}
+    """
+    ### Evaluate base point
+    f0 = f(x_k)
+    ce0 = np.array([ce_i(x_k) for ce_i in ce]) if len(ce) else np.array([])
+    ci0 = np.array([ci_j(x_k) for ci_j in ci]) if len(ci) else np.array([])
+
+    ### Compute merit penalty parameter (L1-type merit)
+    # 방법 1 : 라그랑지 승수 값만을 활용하여 제약조건에 대한 페널티 파라미터 설정
+    if sigma is None:
+        sigma = np.max([np.linalg.norm(lmbda, np.inf),
+                        np.linalg.norm(nu, np.inf)]) + 1.0
+    
+    # # 방법 2 : 제약조건 위반 수준에 따라 라그랑지 승수 값을 활용하여 어댑티브하게 제약조건에 대한 페널티 파라미터 설정
+    # if sigma is None:
+    #     # 잔차 계산 (등호 + 부등호)
+    #     r_ce = np.linalg.norm([ce_i(x_k) for ce_i in ce]) if len(ce) else 0.0
+    #     r_ci = np.linalg.norm([min(ci_j(x_k), 0.0) for ci_j in ci]) if len(ci) else 0.0
+    #     r_c  = r_ce + r_ci
+
+    #     # 최대 Lagrange 승수 크기
+    #     base = np.max([
+    #         np.linalg.norm(lmbda, np.inf),
+    #         np.linalg.norm(nu, np.inf)
+    #     ])
+
+    #     # adaptive σ: 제약 위반이 작아지면 sigma를 줄임
+    #     sigma = base * (1.0 + 10.0 * r_c) + 1.0
+    #     sigma = np.clip(sigma, 1.0, 50.0)  # capped range for stability
+
+    def phi(x):
+        """L1 merit function"""
+        ce_x = np.array([ce_i(x) for ce_i in ce]) if len(ce) else np.array([])
+        ci_x = np.array([ci_j(x) for ci_j in ci]) if len(ci) else np.array([])
+        val = f(x)
+        if len(ce_x):
+            val += sigma * np.sum(np.abs(ce_x))
+        if len(ci_x):
+            val += sigma * np.sum(np.maximum(-ci_x, 0.0))
+        return val
+
+    ### Directional derivative of merit function (φ'(0))
+    grad_f = grad_centraldiff(f, x_k)
+    grad_ce = [grad_centraldiff(ce_i, x_k) for ce_i in ce]
+    grad_ci = [grad_centraldiff(ci_j, x_k) for ci_j in ci]
+
+    dphi0 = grad_f @ pk
+    eta = 1e-8 
+
+    # dphi0 계산 방법 1
+    if len(ce):
+        dphi0 += sigma * np.sum([np.sign(ce0[i]) * (grad_ce[i] @ pk) for i in range(len(ce))])
+    if len(ci):
+        act_idx = np.where(ci0 < 0)[0]  # only violated ineq
+        if len(act_idx):
+            dphi0 += -sigma * np.sum([grad_ci[j] @ pk for j in act_idx])
+    
+    # # dphi0 계산 방법 2
+    # # === equality: ce(x)=0 ===
+    # for i in range(len(ce)):
+    #     aTp = grad_ce[i] @ pk
+    #     if abs(ce0[i]) > eta:
+    #         dphi0 += sigma * np.sign(ce0[i]) * aTp
+    #     else:
+    #         # at boundary: choose subgradient that maximizes decrease
+    #         dphi0 += sigma * abs(aTp)
+    
+    # # === inequality: ci(x) >= 0 ===
+    # for j in range(len(ci)):
+    #     g = ci0[j]
+    #     aTp = grad_ci[j] @ pk
+    #     if g > eta:
+    #         # satisfied and not near-active: no contribution
+    #         pass
+    #     elif g < -eta:
+    #         # violated: derivative of max(-g,0) is -aTp
+    #         dphi0 += -sigma * aTp
+    #     else:
+    #         # near boundary g≈0: use Clarke subgradient
+    #         # d/dα max(-g,0) at 0 is -min(aTp, 0)
+    #         dphi0 += -sigma * min(aTp, 0.0)
+
+    phi0 = phi(x_k)
+
+    ### Backtracking line search
+    alpha = alpha0
+    max_iter = 20
+    for it in range(max_iter):
+        x_trial = x_k + alpha * pk
+        phi_trial = phi(x_trial)
+        # Armijo condition (sufficient decrease)
+        if phi_trial <= phi0 + c1 * alpha * dphi0:
+            break
+        alpha *= tau
+        if alpha < tol:
+            alpha = tol
+            break
+
+    return alpha, {'phi0': phi0, 'phi(alpha)': phi_trial, 'alpha_final': alpha, 'n_iter': it+1}
+
+# ----------------------------------------------------------------------------Main Optimization Algorithm(Unconstrained)--------------------------------------------------------
 ### Steepest Descent Method
 # 가장 느리지만 가장 수렴 가능성 높음
 def stp_descent(f, x0, tol):
@@ -279,14 +500,14 @@ def stp_descent(f, x0, tol):
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         list_x = [x0]; list_f = [f0]; list_grad = [grad0]
         return list_x, list_f, list_grad
     else:
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
 
     ### Initialization for searching iterations
@@ -351,14 +572,14 @@ def cg_hs(f, x0, tol):
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         list_x = [x0]; list_f = [f0]; list_grad = [grad0]
         return list_x, list_f, list_grad
     else:
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
 
     ### Initialization for searching iterations
@@ -430,14 +651,14 @@ def cg_fr(f, x0, tol):
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         list_x = [x0]; list_f = [f0]; list_grad = [grad0]
         return list_x, list_f, list_grad
     else:
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
 
     ### Initialization for searching iterations
@@ -509,14 +730,14 @@ def newton(f, x0, tol):
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         list_x = [x0]; list_f = [f0]; list_grad = [grad0]
         return list_x, list_f, list_grad
     else:
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
 
     ### Initialization for searching iterations
@@ -587,14 +808,14 @@ def quasi_newton_bfgs(f, x0, tol):
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         list_x = [x0]; list_f = [f0]; list_grad = [grad0]
         return list_x, list_f, list_grad
     else:
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} > {tol}, x0 : {x0} is not an optimum point. Optimization begins !')
         pass
 
     ### Initialization for searching iterations
@@ -606,8 +827,7 @@ def quasi_newton_bfgs(f, x0, tol):
     f_new = f0
     grad_new = grad0
     
-    err = 100
-    k = 0
+    tol_step_final = 1e-2*tol
 
     ############## 과제용 plot을 위한 log 담기 위한 list
     list_x = [x0]
@@ -616,7 +836,7 @@ def quasi_newton_bfgs(f, x0, tol):
 
     ############## Searching iterations
     ###### Update info of current point
-    while err > tol:
+    for k in range(10000):
         x_old = x_cur
         grad_old = grad_cur
         hessian_inv_aprx_old = hessian_inv_aprx_cur
@@ -639,26 +859,34 @@ def quasi_newton_bfgs(f, x0, tol):
         alpha_cur = wolfe_strong_interpol(f, x_cur, f_cur, grad_cur, p_cur, 0.9)
 
         ##### x_new update
-        k = k + 1
         x_new = x_cur + alpha_cur*p_cur
         f_new = f(x_new)
         grad_new = grad_centraldiff(f, x_new)
-        err = np.linalg.norm(grad_new)
         list_x.append(x_new)
         list_f.append(f_new)
         list_grad.append(grad_new)
-        print(f'x_{k} : {x_new}')
-        print(f'f_{k} : {f_new}')
-        print(f'norm(grad(x_{k})) : {err}')
+
+        # Convergence check for Outer loop
+        r_grad_f = np.linalg.norm(grad_new)
+        r_step = np.linalg.norm(x_new - x_cur)
+        if k >= 2:
+            if ((r_grad_f <= tol) | # ∇L_A도 충분히 정칙점에 도달했거나
+                (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
+                print(f'‖∇f(x_{k+1})‖ : {r_grad_f} / tol_∇f : {tol} / ‖∆x_{k+1}‖ : {r_step} / tol_∆x : {tol_step_final}')
+                break # iteration 종료하자
+        print("BFGS")
+        print(f'x_{k+1} : {x_new}')
+        print(f'f_{k+1} : {f_new}')
+        print(f'‖∇f(x_{k+1})‖ : {r_grad_f}')
+        print(f'‖∆x_{k+1}‖ : {r_step}')
         print(f'recent alpha : {alpha_cur}')
         print(f'recent p : {p_cur}')
         print()
 
-    print(f'Optimization converges -> Iteration : {k} / x* : {x_new} / f(x*) : {f(x_new)} / norm(grad(x*)) : {np.linalg.norm(grad_new)} ')
+    print(f'BFGS \n Optimization converges -> Iteration : {k+1} / x* : {x_new} / f(x*) : {f_new} / ‖∇f(x*)‖ : {r_grad_f} ‖∆x*‖ : {r_step} \n')
     return list_x, list_f, list_grad
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-########################## Main Optimization Algorithm(Constrained) ##########################
+# ----------------------------------------------------------------------------Main Optimization Algorithm(Constrained)-------------------------------------------------------------
 ### Quadratic Penalty Method(QPM)
 # Heuristic method로서 penalty parameter(mu)를 키워가며 constraint를 잡는 전략
 # penalty parameter(mu)가 너무 커질 경우 inner loop subproblem이 ill-conditioned하게 되어 수렴 불안정.
@@ -693,17 +921,17 @@ def qpm(f, ce, ci, x0, inner_opt, tol):
         if len(infeasible_ci) >= 1:
             raise ValueError(f'Infeasible x0 for {len(infeasible_ci)} of {len(ci)} inequality constraint(s). Try feasible x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         # return x0
 
     ### constraints manipulation
     if len(ce) == 0:
-        ce = [lambda x : 0]
+        ce = [lambda x : np.float64(0.0)]
     if len(ci) == 0:
-        ci = [lambda x : 0]
+        ci = [lambda x : np.float64(0.0)]
 
     ### Initialization for searching iterations
     x_new = x0
@@ -713,11 +941,14 @@ def qpm(f, ce, ci, x0, inner_opt, tol):
     sum_ci_sq = lambda x : np.sum([(np.max([-ci_i(x), 0]))**2 for ci_i in ci]) # sum(c_i(x)^2) for Qk
 
     f_mu = 5; mu_new = 1 # increase factor for penalty parameter mu ; mu0 = 1
+    max_mu = 1e8
     f_tau = .5; tau_new = .2 # decrease factor for convergence criteria for Qk ; tau0 = .2
+    tau_min = 1e-5
 
     ### 과제용 plot을 위한 log 담기 위한 list
     list_x = [x0]
     list_f = [f0]
+    list_grad_f = [grad0]
     list_ce = [[ce_i(x0) for ce_i in ce]]
     list_ci = [[ci_i(x0) for ci_i in ci]]
 
@@ -729,9 +960,9 @@ def qpm(f, ce, ci, x0, inner_opt, tol):
         tau_cur = tau_new; print(f'tau_{j} = {tau_cur}') # Qk convergence criteria update(decrease)
         Q_cur = lambda x : f(x) + .5*mu_cur*sum_ce_sq(x) + .5*mu_cur*sum_ci_sq(x) # quadratic penalty function Qk at x_k
         log_inner = inner_opt(Q_cur, x_cur, tau_cur) # Solving ∇Qk(x*_k) ≤ tau_k ; Inner loop
-        x_new = log_inner[0][-1]; f_new = f(x_new); ce_new = [ce_i(x_new) for ce_i in ce]; ci_new = [ci_i(x_new) for ci_i in ci]
-        mu_new = mu_cur*f_mu
-        tau_new = tau_cur*f_tau
+        x_new = log_inner[0][-1]; f_new = f(x_new); grad_f_new = grad_centraldiff(f, x_new); ce_new = [ce_i(x_new) for ce_i in ce]; ci_new = [ci_i(x_new) for ci_i in ci]
+        mu_new = min(mu_cur*f_mu, max_mu)
+        tau_new = max(tau_cur*f_tau, tau_min)
 
         # Convergence check of x* ... QPM을 위한 convergence 기준은 명확한 게 없음. 애초에 휴리스틱 알고리즘이라 근본이 없는 놈이라 그럼.
         move_x = np.linalg.norm(x_new - x_cur) # convergence criteria of x*_k
@@ -750,17 +981,17 @@ def qpm(f, ce, ci, x0, inner_opt, tol):
 
         list_x.append(x_new)
         list_f.append(f_new)
+        list_grad_f.append(grad_f_new)
         list_ce.append(ce_new)
         list_ci.append(ci_new)
 
         if done:
             print(f'Outer loop converged at {j+1} iteration(s) !')
             print(f'iter = {j+1} x* = {x_new}, f(x*) = {f(x_new)}, |ce(x*)|₁ = {np.sum(np.abs(ce_new))}, |ci(x*)|₁ = {np.sum(np.abs(ci_new))}')
-            return list_x, list_f, list_ce, list_ci
+            return list_x, list_f, list_grad_f, list_ce, list_ci
 
 ### Augmented Lagrangian Method(ALM)
 # KKT conditions based on Lagrangian function 개념을 활용하여 비교적 작은 penalty method(mu, rho)로도 안정적 수렴 가능.
-
 def alm(f, ce, ci, x0, inner_opt, tol):
     ### Check input data type
     if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
@@ -792,27 +1023,27 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         if len(infeasible_ci) >= 1:
             raise ValueError(f'Infeasible x0 for {len(infeasible_ci)} of {len(ci)} inequality constraint(s). Try feasible x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         # return x0
 
     ### constraints manipulation
     if len(ce) == 0:
-        ce = [lambda x : 0]
+        ce = [lambda x : np.float64(0.0)]
     if len(ci) == 0:
-        ci = [lambda x : 0]
+        ci = [lambda x : np.float64(0.0)]
 
     ### Initialization for searching iterations
     x_new = x0
 
     ### Parameter setting for ALM
     # Final tolerance for outer loop
-    tol_eq_final = 1e-6 # equality feasibility
-    tol_ineq_final = 1e-6 # inequality feasibility
-    tol_opt_final = 1e-6 # optimality (∥∇L_A∥∞)
-    tol_step_final = 1e-8 # step size (relative factor 포함 권장)
+    tol_eq_final = 1e-5 # equality feasibility
+    tol_ineq_final = 1e-5 # inequality feasibility
+    tol_opt_final = tol # optimality (∥∇L_A∥∞)
+    tol_step_final = 1e-3*tol # step size (relative factor 포함 권장)
 
     # Initial tolearnce of constraints for outer loop(점차 tighten)
     tol_eq   = 1e-3
@@ -932,7 +1163,9 @@ def alm(f, ce, ci, x0, inner_opt, tol):
     print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
-def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol):
+### Augmented Lagrangian Method(ALM) for SQP(Sequential Quadratic Programming)
+# SQP 알고리즘의 내부(중간) 알고리즘으로 사용하고자 따로 만듦. 구조는 위의 ALM이랑 동일
+def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조금 다르게 sqp의 outer iteration으로부터 lmbda0와 nu0를 받음
     ### Check input data type
     if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
         raise ValueError('Please input at least either one equality or inequality constraint as list type ! ; Empty list is OK as well.')
@@ -957,34 +1190,34 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol):
     if not np.isfinite(f0).all():
         raise ValueError('Function value at x0 is not finite. Try another x0 !')
 
-    # ### Check ci(x0) ≥ 0
+    # ### Check ci(x0) ≥ 0 # SQP를 위한 ALM에서는 infeasible initial point 허용하기로 하자.
     # if len(ci) >= 1: # 부등호제약조건은 feasibility 고려하고 등호제약조건은 미고려(∵ exactly하게 맞추기가 더 어려움)
     #     infeasible_ci = [ci_j(x0) for ci_j in ci if ci_j(x0) < 0] # infeasible criteria of c
     #     if len(infeasible_ci) >= 1:
     #         raise ValueError(f'Infeasible x0 for {len(infeasible_ci)} of {len(ci)} inequality constraint(s). Try feasible x0 !')
 
-    ### Check ∇f(x0)
+    ### Check ||∇f(x0)||
     grad0 = grad_centraldiff(f, x0)
     if np.linalg.norm(grad0) < tol: # Check optimality
-        # print(f'Since |grad(x0)| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        # print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
         # return x0
         pass
     
     ### constraints manipulation
     if len(ce) == 0:
-        ce = [lambda x : 0]
+        ce = [lambda x : np.float64(0.0)]
     if len(ci) == 0:
-        ci = [lambda x : 0]
+        ci = [lambda x : np.float64(0.0)]
 
     ### Initialization for searching iterations
     x_new = x0
 
     ### Parameter setting for ALM
     # Final tolerance for outer loop
-    tol_eq_final = 1e-6 # equality feasibility
-    tol_ineq_final = 1e-6 # inequality feasibility
-    tol_opt_final = 1e-6 # optimality (∥∇L_A∥∞)
-    tol_step_final = 1e-8 # step size (relative factor 포함 권장)
+    tol_eq_final = 1e-5 # equality feasibility
+    tol_ineq_final = 1e-5 # inequality feasibility
+    tol_opt_final = tol # optimality (∥∇L_A∥∞)
+    tol_step_final = 1e-3*tol # step size (relative factor 포함 권장)
 
     # Initial tolearnce of constraints for outer loop(점차 tighten)
     tol_eq   = 1e-3
@@ -1022,7 +1255,7 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol):
         # print(f'mu_{k} = {mu}')
         # print(f'rho_{k} = {rho}')
         # print(f'tau_{k} = {tau}')
-
+        
         # penalty term update
         penalty_ce = lambda x : -lmbda@np.array([ce_j(x) for ce_j in ce]) + .5*mu*np.sum(np.array([ce_j(x)**2 for ce_j in ce]))
         penalty_ci = lambda x : (-nu@np.array([ci_j(x) - np.maximum(ci_j(x) - nu[j]/rho, 0) for j, ci_j in enumerate(ci)]) +
@@ -1081,11 +1314,24 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol):
         # 내부 허용치 스케줄(항상 단조 감소)
         tau = max(omega_min, omega_decay*tau)
 
-        # # ---------------------------------------- print log ----------------------------------------
+        # ---------------------------------------- print log ----------------------------------------
         # print(f'{k+1}-th outer loop : Inner loop converges at {len(log_inner[0]) - 1} iteration(s) ...')
         # print(f'|x_{k+1} - x_{k}| = {r_step}')
         # print(f'Max violation of equality constraints : {r_ce}')
         # print(f'Max violation of inequality constraints : {r_ci}')
+
+        x_str = ", ".join([f"{xi:.8f}" for xi in x_new])
+        print("\n log - ALM")
+        print(f"‖∆x‖ = {r_step:.2e}, "
+            f"x{k+1:02d} = [{x_str}] | "
+            f"f = {f_new:.4e}, "
+            f"‖∇L‖ = {r_grad_LA:.2e}, "
+            f"‖ce‖∞ = {r_ce:.2e}, "
+            f"‖ci‖∞ = {r_ci:.2e}, "
+            f"‖λ‖ = {np.linalg.norm(lmbda):.2e}, "
+            f"‖ν‖ = {np.linalg.norm(nu):.2e}\n")
+
+
         # print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
 
         list_x.append(x_new)
@@ -1104,3 +1350,160 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol):
     # print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
     # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
+
+### Sequential Quadratic Programming(SQP)
+# 중간 알고리즘(QP subproblem를 풀기 위한)으로 ALM을 사용하는 SQP 알고리즘
+# 부등호제약문제는 잘 푸는데, 등호제약문제는 잘 못 푼다. 왜 그런지는 모르겠다. 일단 ALM은 등호제약문제도 잘 품. 근데 유독 SQP만 잘 못 품. 왜그러냐 ;;
+def sqp(f, ce, ci, x0, inner_opt, tol, tol_inter): # inner_opt : 0:stp_descent, 1:cg_hs, 2:cg_fr, 3:quasi_newton_bfgs
+    ### Check input data type
+    if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
+        raise ValueError('Please input at least either one equality or inequality constraint as list type ! ; Empty list is OK as well.')
+
+    if (not isinstance(x0, np.ndarray)) | (x0.ndim >= 2):
+        raise ValueError('Please input x0 as 1D ndarray type !!')
+
+    ### Check f(x0)
+    f0 = f(x0)
+    if not np.isfinite(f0).all():
+        raise ValueError('Function value at x0 is not finite. Try another x0 !')
+
+    ### Check ||∇f(x0)||
+    grad0 = grad_centraldiff(f, x0)
+    if np.linalg.norm(grad0) < tol: # Check optimality
+        print(f'Since ||grad(x0)|| = {np.linalg.norm(grad0)} < {tol}, x0 : {x0} is optimum point !')
+        # return x0
+
+    ### constraints manipulation
+    if len(ce) == 0:
+        ce = [lambda x : np.float64(0.0)]
+    if len(ci) == 0:
+        ci = [lambda x : np.float64(0.0)]
+
+    ### Initialization for searching iterations
+    x_new = x0
+    f_new = f0
+    ce_new = [ce_j(x_new) for ce_j in ce] # ce_k+1
+    ci_new = [ci_j(x_new) for ci_j in ci] # ci_k+1
+    grad_f_new = grad0
+    grad_ce_new = [grad_centraldiff(ce_j, x0) for ce_j in ce]
+    grad_ci_new = [grad_centraldiff(ci_j, x0) for ci_j in ci]
+    lmbda_new = np.array([0]*len(ce)) # initial lagrange multipliers of equality constraints for Lk
+    nu_new = np.array([0]*len(ci)) # initial lagrange multipliers of inequality constraints
+
+    # tolerances
+    tol_opt_final   = tol
+    tol_eq_final    = 1e-6
+    tol_ineq_final  = 1e-6
+    tol_step_final  = 1e-3*tol
+
+    ### 과제용 plot을 위한 log 담기 위한 list
+    list_x = [x0]
+    list_f = [f0]
+    list_grad_f = [grad0]
+    list_ce = [[ce_i(x0) for ce_i in ce]]
+    list_ci = [[ci_i(x0) for ci_i in ci]]
+    list_lmbda = [lmbda_new]
+    list_nu = [nu_new]
+
+    ### Outer loop begins
+    for k in np.arange(100): # max iteration of outer loop = 100
+        
+        # ---------------- Update QPk ----------------
+        x_k = x_new # x_k
+        ce_k = ce_new
+        ci_k = ci_new
+        grad_f_k = grad_f_new
+        grad_ce_k = grad_ce_new
+        grad_ci_k = grad_ci_new
+        lmbda_k = lmbda_new
+        nu_k = nu_new
+        if k == 0:
+            # 첫 반복: H는 그냥 I로 시작 (또는 스케일 조정된 I)
+            hessian_pd_k = np.eye(len(x_new))
+        else:
+            hessian_pd_k, dbg = damped_bfgs(hessian_pd_k, s_k, y_k, c=0.2, eps=1e-12, eig_floor=0.0)
+            # print("sTy =", float(s_k @ y_k))
+            # print("yHy =", float(y_k @ (hessian_pd_k @ y_k)))
+        
+        Q_QPk = lambda p : .5*p@(hessian_pd_k@p) + grad_f_k@p
+        ce_QPk = [lambda p, j=j, a=grad_ce_k_j: a@p + ce_k[j] for j, grad_ce_k_j in enumerate(grad_ce_k)]
+        ci_QPk = [lambda p, j=j, a=grad_ci_k_j: a@p + ci_k[j] for j, grad_ci_k_j in enumerate(grad_ci_k)]
+        p0_QPk = np.array([0]*len(x_k)) # initial guess of p_Qk
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            log_inter = alm4sqp(Q_QPk, ce_QPk, ci_QPk, p0_QPk, lmbda_k, nu_k, inner_opt, tol_inter) # Intermediate loop(ALM)
+        
+        # ---------------- Update x info ----------------
+        p_new = log_inter[0][-1] # search direction p_k
+        lmbda_new = log_inter[-2][-1] # multiplier for ce -> lmbda_k
+        nu_new = np.maximum(log_inter[-1][-1], 0) # multiplier for ci -> nu_k (nonnegativity)
+        alpha, info = steplength_merit(f, ce, ci, x_k, p_new, lmbda_new, nu_new) # step length alpha_k
+        x_new = x_k + alpha*p_new # new point x_k+1
+        f_new = f(x_new) # new f value f_k+1
+        ce_new = [ce_j(x_new) for ce_j in ce] # ce_k+1
+        ci_new = [ci_j(x_new) for ci_j in ci] # ci_k+1
+        grad_f_new = grad_centraldiff(f, x_new) # ∇f_k+1
+        grad_ce_new = [grad_centraldiff(ce_j, x_new) for ce_j in ce] # ∇ce_k+1
+        grad_ci_new = [grad_centraldiff(ci_j, x_new) for ci_j in ci] # ∇ci_k+1
+
+        # ---------------- Ingredients for calculating hessian_pd_k(BFGS) ----------------
+        s_k = x_new - x_k # s_k (BFGS)
+        # Lagrangian gradient(∇L(x_k) = ∇f(x_k) - Σλ_k∇ce(x_k) - Συ_k∇ci(x_k)) diff (BFGS)
+        grad_L_new = grad_f_new \
+            - sum(lmbda_new[j]*grad_ce_new[j] for j in range(len(ce))) \
+            - sum(nu_new[j]*grad_ci_new[j] for j in range(len(ci)))
+        grad_L_cur = grad_f_k \
+            - sum(lmbda_new[j]*grad_ce_k[j] for j in range(len(ce))) \
+            - sum(nu_new[j]*grad_ci_k[j] for j in range(len(ci)))
+        y_k = grad_L_new - grad_L_cur # y_k (BFGS)
+
+        # ---------------- Convergence / Termination Criteria ----------------
+        # residuals
+        r_grad_L  = np.linalg.norm(grad_L_new) # ‖∇L(x_k+1)‖
+        r_ce   = np.max(np.abs(ce_new)) # ‖ce(x_k+1)‖∞
+        r_ci   = np.max(np.maximum(-np.array(ci_new), 0.0)) # ‖ci(x_k+1)‖∞
+        r_step = np.linalg.norm(x_new - x_k) # ‖∆x‖
+
+        list_x.append(x_new)
+        list_f.append(f_new)
+        list_grad_f.append(grad_f_new)
+        list_ce.append(ce_new)
+        list_ci.append(ci_new)
+        list_lmbda.append(lmbda_new)
+        list_nu.append(nu_new)
+
+        # convergence check
+        if (r_grad_L   <= tol_opt_final and
+            r_ce    <= tol_eq_final  and
+            r_ci    <= tol_ineq_final and
+            r_step  <= tol_step_final * (1.0 + np.linalg.norm(x_new))):
+            print()
+            break
+
+        # 현황 확인
+        x_str = ", ".join([f"{xi:.8f}" for xi in x_new])
+        print("\n log - SQP")
+        print(f"‖∆x‖ = {r_step:.2e}, "
+            f"x{k+1:02d} = [{x_str}] | "
+            f"f = {f_new:.4e}, "
+            f"‖∇L‖ = {r_grad_L:.2e}, "
+            f"‖ce‖∞ = {r_ce:.2e}, "
+            f"‖ci‖∞ = {r_ci:.2e}, "
+            f"‖λ‖ = {np.linalg.norm(lmbda_new):.2e}, "
+            f"‖ν‖ = {np.linalg.norm(nu_new):.2e} \n")
+
+        # optional safety stop
+        if not np.isfinite(x_new).all() or not np.isfinite(f_new):
+            print("NaN or Inf detected — terminating early.")
+            break
+    else:
+        print("\nReached maximum outer iterations (no convergence).")
+    # ---------------- Output summary ----------------
+    print(f"Final iterate: x* = {x_new}")
+    print(f"f(x*)         = {f_new}")
+    print(f"λ*            = {lmbda_new}")
+    print(f"ν*            = {nu_new}")
+    print(f"‖∇L(x*)‖     = {r_grad_L:.3e}")
+    print(f"‖ce(x*)‖∞   = {r_ce:.3e}")
+    print(f"‖ci(x*)‖∞ = {r_ci:.3e}")
+
+    return list_x, list_f, list_grad_f, list_ce, list_ci, list_lmbda, list_nu
