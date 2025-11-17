@@ -1388,10 +1388,34 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
     # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
-### Sequential Quadratic Programming(SQP)
-# 중간 알고리즘(QP subproblem를 풀기 위한)으로 ALM을 사용하는 SQP 알고리즘
-# 부등호제약문제는 잘 푸는데, 등호제약문제는 잘 못 푼다. 왜 그런지는 모르겠다. 일단 QPM/ALM은 등호제약문제도 잘 품. 근데 유독 SQP만 잘 못 품. 왜그러냐 ;;
-def sqp(f, ce, ci, x0, inner_opt, tol, tol_inter): # inner_opt : 0:stp_descent, 1:cg_hs, 2:cg_fr, 3:quasi_newton_bfgs
+def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
+    '''
+    Sequential Quadratic Programming(SQP) using ALM as an intermediate algorithm for solving QP subproblem.  
+    It works well for inequality constrained opt prblm, but not for equality constrained opt prblm.  
+    (I don't know why. Contrary to SQP, both QPM/ALM work well for both type of constrained opt prblms.)
+
+    Args:
+        f (callable) : objective function(output \: single scalar)
+        ce (list[callable]) : Equality constraint functions
+        ci (list[callable]) : Inequality constraint functions
+        x0 (1D ndarray) : Initial guess(# of it should be same with input variables of f)
+        inner_opt (int, optional) : Inner optimizer for ALM(default \: 3)  
+            (0 \: SDM 1 \: CGM_HS 2 \: CGM_FR 3 \: BFGS)
+        tol (float, optional) : Convergence tolerance ε for outer iteration(SQP).  
+            ∇L_k < ε (k \: iteration of SQP)
+        tol_inter (float, optional) : Convergence tolerance ε for intermediate iteration(ALM).  
+            ∇L_A_j < ε (j \: iteration of ALM)
+
+    Returns:
+        log (list[list]) : Optimization log containing:
+         - list_x (list) : Solution log
+         - list_f (list) : Final objective value log
+         - list_grad_L (list) : Gradient of Lagrangian log
+         - list_ce (list) : Equality constraint value log
+         - list_ci (list) : Inequality constraint value log
+         - list_lmbda (list) : Lagrange multipliers for equality constraints log
+         - list_nu (list) : Lagrange multipliers for inequality constraints log
+    '''
     ### Check input data type
     if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
         raise ValueError('Please input at least either one equality or inequality constraint as list type ! ; Empty list is OK as well.')
@@ -1436,7 +1460,8 @@ def sqp(f, ce, ci, x0, inner_opt, tol, tol_inter): # inner_opt : 0:stp_descent, 
     ### 과제용 plot을 위한 log 담기 위한 list
     list_x = [x0]
     list_f = [f0]
-    list_grad_f = [grad0]
+    # list_grad_f = [grad0]
+    list_grad_L = [grad0]
     list_ce = [[ce_i(x0) for ce_i in ce]]
     list_ci = [[ci_i(x0) for ci_i in ci]]
     list_lmbda = [lmbda_new]
@@ -1521,7 +1546,8 @@ def sqp(f, ce, ci, x0, inner_opt, tol, tol_inter): # inner_opt : 0:stp_descent, 
 
         list_x.append(x_new)
         list_f.append(f_new)
-        list_grad_f.append(grad_f_new)
+        # list_grad_f.append(grad_f_new)
+        list_grad_L.append(grad_L_new)
         list_ce.append(ce_new)
         list_ci.append(ci_new)
         list_lmbda.append(lmbda_new)
@@ -1562,5 +1588,7 @@ def sqp(f, ce, ci, x0, inner_opt, tol, tol_inter): # inner_opt : 0:stp_descent, 
     print(f"‖∇L(x*)‖     = {r_grad_L:.3e}")
     print(f"‖ce(x*)‖∞   = {r_ce:.3e}")
     print(f"‖ci(x*)‖∞ = {r_ci:.3e}")
-
-    return list_x, list_f, list_grad_f, list_ce, list_ci, list_lmbda, list_nu
+    
+    log = [list_x, list_f, list_grad_L, list_ce, list_ci, list_lmbda, list_nu]
+    
+    return log
