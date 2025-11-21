@@ -1,5 +1,8 @@
+# ------------------------------------------------------ 순수 PyTorch 연산으로만 작성 ------------------------------------------------------
+# scipy에 넣기 위해서는 numpy() 데이터 타입으로 변환 필요(이 함수를 직접 쓸 필요 없이 breguet_range() 함수 자체를 받는 또다른 함수를 def하고 그 함수 쓰면 된다.)
 ## Essential Imports
 import numpy as np # for pi and atan
+import torch
 import matplotlib.pyplot as plt # for plotting contour
 
 def density(h):
@@ -17,7 +20,7 @@ def mass_fuel_rate(v,h):
     #   h (m), altitude: float
     # Output:
     #   mass_fuel_rate (kg/s): float
-    turbine_area = np.pi*0.92**2/2
+    turbine_area = torch.pi*0.92**2/2
     FAR = 1E-1
     return density(h)*v*turbine_area*FAR
 
@@ -39,7 +42,7 @@ def C_Dw(v,h):
     #   h (m), altitude: float
     # Output:
     #   wave drag coefficient: float
-    return 10*(np.atan(10*((v/(343*0.7))**2-1))+np.pi/2)
+    return 10*(torch.atan(10*((v/(343*0.7))**2-1))+torch.pi/2)
 
 def C_D(v,h,weight,S):
     ## Calculates the coefficient of drag
@@ -53,7 +56,7 @@ def C_D(v,h,weight,S):
     e = 0.8
     AR = 10
     coeff_drag = 0.5/60
-    coeff_drag += C_L(v,h,weight,S)**2/(np.pi*e*AR)
+    coeff_drag += C_L(v,h,weight,S)**2/(torch.pi*e*AR)
     return coeff_drag + C_Dw(v,h)
 
 def ct(v,h,weight,S):
@@ -68,7 +71,7 @@ def ct(v,h,weight,S):
     ct_value = mass_fuel_rate(v,h)/(0.5*density(h)*v**2*S*C_D(v,h,weight,S))
     return ct_value + 10**(-5)
 
-def range(v,h,weight,S):
+def breguet_range(v,h,weight,S): # 교수님 식에서는 weight이 비행 중 평균적인 비행기 무게를 뜻함. 나의 경우는 이 무게를 비행 후 최종 무게(W_f)로 썼음.
     ##Calculates the range of the aircraft
     # Inputs:
     #   v (m/s), velocity: float
@@ -77,11 +80,12 @@ def range(v,h,weight,S):
     #   S (m^2), platform area: float
     # Output:
     #   range (km): float
-    W_f = 162400
-    W_fuel = 0.8 * 183214
+    W_f = torch.tensor(162400.0) # 비행 끝난 후 최종 무게 ; 교수님이 쓰신 이 식에서는 이게 empty flight의 무게가 아니라 그냥 비행 후 최종 무게임(그냥 고정값으로 가정하심).
+    W_fuel = torch.tensor(0.8 * 183214) # 비행 동안 쓴 fuel 무게
     # You can change this to whatever you want, it will only change the total range, not the optimal location
-    W_i = W_f + W_fuel
-    total_range = v/ct(v,h,weight,S)*C_L(v,h,weight,S)/C_D(v,h,weight,S)*np.log(W_i/W_f)
+    W_i = W_f + W_fuel # 비행 전 무게
+    total_range = v/ct(v,h,weight,S)*C_L(v,h,weight,S)/C_D(v,h,weight,S)*torch.log(W_i/W_f)
+    # total_range = total_range.numpy()
     return total_range / 1E3
 
 """ Example usage for Question 2.1 in Assignment 2 
@@ -95,10 +99,10 @@ fuel_percentage = 0.75
 weight_used = W_f + W_fuel*fuel_percentage
 
 ## Example for Assignment 2 Question 2.1
-v_axis = np.linspace(0.1,300,1000) # divide by zero error at 0.0, setting to 0.1
-h_axis = np.linspace(0.1,25000,1000)
+v_axis = torch.linspace(0.1,300,1000) # divide by zero error at 0.0, setting to 0.1
+h_axis = torch.linspace(0.1,25000,1000)
 
-V,H = np.meshgrid(v_axis,h_axis)
+V,H = torch.meshgrid(v_axis,h_axis)
 
 range_mesh = range(V,H,weight_used,S)
 
@@ -109,6 +113,6 @@ ax.set_xlabel("v (m/s)")
 ax.set_ylabel("h (m)")
 plt.show()
 # Test to ensure that the max is near the correct location (not exact!)
-i,j = np.where(np.max(range_mesh)==range_mesh)
+i,j = torch.where(torch.max(range_mesh)==range_mesh)
 print(f"Velocity: {V[i,j]} m/s, Height: {H[i,j]} m, Range: {range_mesh[i,j]} km")
 """

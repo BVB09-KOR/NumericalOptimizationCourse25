@@ -1460,7 +1460,7 @@ def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
     ### 과제용 plot을 위한 log 담기 위한 list
     list_x = [x0]
     list_f = [f0]
-    # list_grad_f = [grad0]
+    list_grad_f = [grad0] # 굳이 저장 안 해도 됨(생략 가능)
     list_grad_L = [grad0]
     list_ce = [[ce_i(x0) for ce_i in ce]]
     list_ci = [[ci_i(x0) for ci_i in ci]]
@@ -1484,9 +1484,6 @@ def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
             # 첫 반복: H는 그냥 I로 시작 (또는 스케일 조정된 I)
             B_k = np.eye(len(x_new))
         else:
-            if k == 9:
-                print()
-                print()
             sy = s_k @ y_k # 스칼라
             sBs = s_k @ (B_k @ s_k) # (n, ) ndarray
             theta = 0.8*sBs/(sBs - sy) if (sy < 0.2*sBs) else 1 # 스칼라
@@ -1507,6 +1504,7 @@ def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
             p0_QPk = np.array([0]*len(x_k))
         else:
             p0_QPk = p_new
+        # ALM for solving QPk subproblem
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             log_inter = alm4sqp(Q_QPk, ce_QPk, ci_QPk, p0_QPk, lmbda_k, nu_k, inner_opt, tol_inter) # Intermediate loop(ALM)
         
@@ -1546,7 +1544,7 @@ def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
 
         list_x.append(x_new)
         list_f.append(f_new)
-        # list_grad_f.append(grad_f_new)
+        list_grad_f.append(grad_f_new) # 굳이 저장 안 해도 됨(생략 가능)
         list_grad_L.append(grad_L_new)
         list_ce.append(ce_new)
         list_ci.append(ci_new)
@@ -1589,6 +1587,6 @@ def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
     print(f"‖ce(x*)‖∞   = {r_ce:.3e}")
     print(f"‖ci(x*)‖∞ = {r_ci:.3e}")
     
-    log = [list_x, list_f, list_grad_L, list_ce, list_ci, list_lmbda, list_nu]
+    log = [list_x, list_f, list_grad_f, list_grad_L, list_ce, list_ci, list_lmbda, list_nu]
     
     return log
