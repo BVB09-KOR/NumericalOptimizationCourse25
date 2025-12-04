@@ -1,3 +1,6 @@
+# 25.12.02
+# 1. alm, alm4sqp 내부 convergence criteria에 쓰이는 ∇L_A -> ∇L로 수정
+
 ############################################# Numerical Optimization 모듈(완성본 모음) #############################################
 import numpy as np
 import io
@@ -141,96 +144,6 @@ def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hess
         raise ValueError("Non-finite number detected in search_direction_quasi_newton_bfgs (NaN or inf)")
 
     return p, hessian_inv_aprx
-
-def damped_bfgs(H, s, y, *, c=0.2, eps=1e-12, eig_floor=0.0, symmetrize=True):
-    """
-    Powell-damped BFGS update for the Hessian (NOT the inverse).
-    
-    Parameters
-    ----------
-    H : (n,n) ndarray
-        Current symmetric (preferably PD) Hessian approximation.
-    s : (n,) ndarray
-        Step: s_k = x_{k+1} - x_k.
-    y : (n,) ndarray
-        Gradient diff: y_k = ∇L(x_{k+1},λ_{k+1},ν_{k+1}) - ∇L(x_k,λ_{k+1},ν_{k+1}).
-    c : float, default 0.2
-        Powell damping curvature threshold; use 0.2 classically.
-    eps : float, default 1e-12
-        Small positive number to protect denominators.
-    eig_floor : float, default 0.0
-        If >0, floor the minimal eigenvalue to this value (very light regularization).
-    symmetrize : bool, default True
-        If True, enforce symmetry by (H+H.T)/2 at the end.
-
-    Returns
-    -------
-    H_next : (n,n) ndarray
-        Updated Hessian approximation.
-    info : dict
-        Diagnostics: {'theta':..., 'sHs':..., 'sTy':..., 'sTyt':..., 'skipped':bool}
-    """
-    s = np.asarray(s, dtype=float).reshape(-1)
-    y = np.asarray(y, dtype=float).reshape(-1)
-    H = np.asarray(H, dtype=float)
-
-    # Precompute quadratic forms
-    Hs   = H @ s
-    sHs  = float(s @ Hs)
-    sTy  = float(s @ y)
-
-    info = {'theta': 1.0, 'sHs': sHs, 'sTy': sTy, 'sTyt': None, 'skipped': False}
-
-    # If s is (near) zero or H is ill-defined in s-direction, skip
-    if sHs <= eps or np.linalg.norm(s) <= eps:
-        # very defensive: tiny regularization
-        H_next = H + eig_floor * np.eye(H.shape[0]) if eig_floor > 0 else H.copy()
-        if symmetrize:
-            H_next = 0.5*(H_next + H_next.T)
-        info['skipped'] = True
-        return H_next, info
-
-    # ----- Powell damping -----
-    # theta = 1 if s^T y >= c * s^T H s, else theta = 0.8 * s^T H s / (s^T H s - s^T y)
-    if sTy >= c * sHs:
-        theta = 1.0
-    else:
-        denom = sHs - sTy
-        if denom <= eps:  # pathological; fall back to no update or minimal damping
-            theta = 0.0  # forces ytilde = Hs
-        else:
-            theta = ( (1.0 - c) * sHs ) / denom  # 0.8 = (1-c) when c=0.2
-    ytil = theta * y + (1.0 - theta) * Hs
-
-    sTyt = float(s @ ytil)
-    info['theta'] = float(theta)
-    info['sTyt']  = sTyt
-
-    # If still violating curvature or too small, skip safely
-    if sTyt <= eps:
-        H_next = H + eig_floor * np.eye(H.shape[0]) if eig_floor > 0 else H.copy()
-        if symmetrize:
-            H_next = 0.5*(H_next + H_next.T)
-        info['skipped'] = True
-        return H_next, info
-
-    # ----- Rank-2 BFGS update on Hessian -----
-    # H_{k+1} = H_k - (H s s^T H) / (s^T H s) + (ytil ytil^T) / (s^T ytil)
-    term1 = np.outer(Hs, Hs) / max(sHs, eps)
-    term2 = np.outer(ytil, ytil) / max(sTyt, eps)
-    H_next = H - term1 + term2
-
-    # Optional tiny eigenvalue floor (very mild, for robustness)
-    if eig_floor > 0.0:
-        # project to ≥ eig_floor if needed
-        w, V = np.linalg.eigh(0.5*(H_next + H_next.T))
-        w = np.maximum(w, eig_floor)
-        H_next = (V * w) @ V.T
-
-    if symmetrize:
-        H_next = 0.5*(H_next + H_next.T)
-
-    return H_next, info
 
 # ---------------------------------------------------------------------------Step length search algorithms---------------------------------------------------------------
 ### Step length search A) Backtracking algorithm - Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
@@ -1032,18 +945,25 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         if len(ci) >= 1:
             nu = np.maximum(nu - rho * ci_new, 0.0)
 
-        grad_LA_new = log_inner[-1][-1]
+        grad_f_new = grad_centraldiff(f, x_new)
+        sum_lmbdaxgrad_ce_new = np.array([lmbda_j*grad_centraldiff(ce_j, x_new) for lmbda_j, ce_j in zip(lmbda, ce)]).sum(axis=0)
+        sum_nuxgrad_ci_new = np.array([nu_j*grad_centraldiff(ci_j, x_new) for nu_j, ci_j in zip(nu, ci)]).sum(axis=0)
+        # x_new를 grad_f(원래 문제의 목적함수의 gradient)와 grad_ce(원래 문제의 등호제약함수), grad_ci(원래 문제의 부등호제약함수)에 넣어서 원래 문제의 ∇L(x_new)를 grad_L로 구해야 함
+        # grad_LA_new는 augmented Lagrangian function의 gradient라 penalty parameter(mu, rho)가 다 반영되어있는 기울기임. 
+        # 내부 solver(quasi newton bfgs) 입장에서나 의미 있는 기울기지 원래 문제에 있어서 아무 의미 없는 기울기.
+        # 따라서 convergence check할 때는 원래 문제에 대한 grad_L을 기준으로 해야 함.
+        grad_L_new = grad_f_new - sum_lmbdaxgrad_ce_new - sum_nuxgrad_ci_new
 
         # residual(잔차) 계산
         r_ce = np.max(np.abs(ce_new)) if len(ce_new) >= 1 else 0 # 등호제약조건 잔차(위반)
         r_ci = np.max(np.maximum(-ci_new, 0)) if len(ci_new) >= 1 else 0 # 부등호제약조건 잔차(위반)
-        r_grad_LA = np.linalg.norm(grad_LA_new, ord=np.inf) # ∇L_A 수준
+        r_grad_L = np.linalg.norm(grad_L_new, ord=np.inf) # ∇L_A 수준
         r_step = np.linalg.norm(x_new - x_cur) # x_new - x_cur 거리
 
         # Convergence check for Outer loop
         if ((r_ce <= tol_eq_final) & # 등호제약조건 위반이 충분히 작고
             (r_ci <= tol_ineq_final) & # 부등호제약조건 위반도 충분히 작고
-            (r_grad_LA <= tol_opt_final) & # ∇L_A도 충분히 정칙점에 도달했고
+            (r_grad_L <= tol_opt_final) & # ∇L_A도 충분히 정칙점에 도달했고
             (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
             done = True # outer loop 종료 flag 마킹하자
         else:
@@ -1064,7 +984,7 @@ def alm(f, ce, ci, x0, inner_opt, tol):
 
         # ---- tolerance update ----
         # If 제약조건 잔차 ≈ 0 and ∇L_A ≈ 0 -> 제약조건 tolerance를 조금 더 빡세게 두자(감소시키자)
-        if (r_ce <= 0.3*tol_eq) & (r_ci <= 0.3*tol_ineq) & (r_grad_LA <= 0.3*tau):
+        if (r_ce <= 0.3*tol_eq) & (r_ci <= 0.3*tol_ineq) & (r_grad_L <= 0.3*tau):
             tol_eq = max(tol_eq_final,   0.5*tol_eq)
             tol_ineq = max(tol_ineq_final, 0.5*tol_ineq)
 
@@ -1080,7 +1000,7 @@ def alm(f, ce, ci, x0, inner_opt, tol):
 
         list_x.append(x_new)
         list_f.append(f_new)
-        list_grad.append(grad_LA_new)
+        list_grad.append(grad_L_new)
         list_ce.append(ce_new)
         list_ci.append(ci_new)
         list_lmbda.append(lmbda)
@@ -1088,11 +1008,11 @@ def alm(f, ce, ci, x0, inner_opt, tol):
 
         if done:
             print(f'Outer loop converges at {k+1} iteration(s) !')
-            print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+            print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
             return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
         
     print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
-    print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+    print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
 ### Augmented Lagrangian Method(ALM) for SQP(Sequential Quadratic Programming)
@@ -1207,19 +1127,27 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
         if len(ci) >= 1:
             nu = np.maximum(nu - rho * ci_new, 0.0)
 
-        grad_LA_new = log_inner[-1][-1]
+        grad_f_new = grad_centraldiff(f, x_new)
+        sum_lmbdaxgrad_ce_new = np.array([lmbda_j*grad_centraldiff(ce_j, x_new) for lmbda_j, ce_j in zip(lmbda, ce)]).sum(axis=0)
+        sum_nuxgrad_ci_new = np.array([nu_j*grad_centraldiff(ci_j, x_new) for nu_j, ci_j in zip(nu, ci)]).sum(axis=0)
+        # x_new를 grad_f(원래 문제의 목적함수의 gradient)와 grad_ce(원래 문제의 등호제약함수), grad_ci(원래 문제의 부등호제약함수)에 넣어서 원래 문제의 ∇L(x_new)를 grad_L로 구해야 함
+        # grad_LA_new는 augmented Lagrangian function의 gradient라 penalty parameter(mu, rho)가 다 반영되어있는 기울기임. 
+        # 내부 solver(quasi newton bfgs) 입장에서나 의미 있는 기울기지 원래 문제에 있어서 아무 의미 없는 기울기.
+        # 따라서 convergence check할 때는 원래 문제에 대한 grad_L을 기준으로 해야 함.
+        grad_L_new = grad_f_new - sum_lmbdaxgrad_ce_new - sum_nuxgrad_ci_new
 
         # residual(잔차) 계산
         r_ce = np.max(np.abs(ce_new)) if len(ce_new) >= 1 else 0 # 등호제약조건 잔차(위반)
         r_ci = np.max(np.maximum(-ci_new, 0)) if len(ci_new) >= 1 else 0 # 부등호제약조건 잔차(위반)
-        r_grad_LA = np.linalg.norm(grad_LA_new, ord=np.inf) # ∇L_A 수준
+        r_grad_L = np.linalg.norm(grad_L_new, ord=np.inf) # ∇L 수준
         r_step = np.linalg.norm(x_new - x_cur) # x_new - x_cur 거리
 
         # Convergence check for Outer loop
         if ((r_ce <= tol_eq_final) & # 등호제약조건 위반이 충분히 작고
             (r_ci <= tol_ineq_final) & # 부등호제약조건 위반도 충분히 작고
-            (r_grad_LA <= tol_opt_final) & # ∇L_A도 충분히 정칙점에 도달했고
-            (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
+            (r_grad_L <= tol_opt_final) & # ∇L도 충분히 정칙점에 도달했고
+            # (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
+            (r_step <= tol_step_final)): # x_new도 충분히 수렴했다면
             done = True # outer loop 종료 flag 마킹하자
         else:
             done = False
@@ -1238,8 +1166,8 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
             rho = min(factor_rho*rho, rho_max) # 부등호제약조건 위반이 크다면 페널티 파라미터를 증가시키자
 
         # ---- tolerance update ----
-        # If 제약조건 잔차 ≈ 0 and ∇L_A ≈ 0 -> 제약조건 tolerance를 조금 더 빡세게 두자(감소시키자)
-        if (r_ce <= 0.3*tol_eq) & (r_ci <= 0.3*tol_ineq) & (r_grad_LA <= 0.3*tau):
+        # If 제약조건 잔차 ≈ 0 and ∇L ≈ 0 -> 제약조건 tolerance를 조금 더 빡세게 두자(감소시키자)
+        if (r_ce <= 0.3*tol_eq) & (r_ci <= 0.3*tol_ineq) & (r_grad_L <= 0.3*tau):
             tol_eq = max(tol_eq_final,   0.5*tol_eq)
             tol_ineq = max(tol_ineq_final, 0.5*tol_ineq)
 
@@ -1247,28 +1175,22 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
         tau = max(omega_min, omega_decay*tau)
 
         # ---------------------------------------- print log ----------------------------------------
-        # print(f'{k+1}-th outer loop : Inner loop converges at {len(log_inner[0]) - 1} iteration(s) ...')
-        # print(f'|x_{k+1} - x_{k}| = {r_step}')
-        # print(f'Max violation of equality constraints : {r_ce}')
-        # print(f'Max violation of inequality constraints : {r_ci}')
-
         x_str = ", ".join([f"{xi:.8f}" for xi in x_new])
         print("\n log - ALM")
         print(f"‖∆p‖ = {r_step:.2e}, "
             f"p{k+1:02d} = [{x_str}] | "
             f"Q_QPk = {f_new:.4e}, "
-            f"‖∇L_A‖ = {r_grad_LA:.2e}, "
+            f"‖∇L‖ = {r_grad_L:.2e}, "
             f"‖ce_QPk‖∞ = {r_ce:.2e}, "
             f"‖ci_QPk‖∞ = {r_ci:.2e}, "
             f"‖λ_ce_QPk‖ = {np.linalg.norm(lmbda):.2e}, "
             f"‖ν_ci_QPk‖ = {np.linalg.norm(nu):.2e}\n")
 
-
         # print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
 
         list_x.append(x_new)
         list_f.append(f_new)
-        list_grad.append(grad_LA_new)
+        list_grad.append(grad_L_new)
         list_ce.append(ce_new)
         list_ci.append(ci_new)
         list_lmbda.append(lmbda)
