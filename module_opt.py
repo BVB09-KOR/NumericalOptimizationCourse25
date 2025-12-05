@@ -920,7 +920,7 @@ def alm(f, ce, ci, x0, inner_opt, tol):
     list_nu = [nu]
 
     ### Outer loop begins
-    for k in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
+    for k in np.arange(100):
         x_cur = x_new # x_k
         print(f'mu_{k} = {mu}')
         print(f'rho_{k} = {rho}')
@@ -957,13 +957,13 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         # residual(잔차) 계산
         r_ce = np.max(np.abs(ce_new)) if len(ce_new) >= 1 else 0 # 등호제약조건 잔차(위반)
         r_ci = np.max(np.maximum(-ci_new, 0)) if len(ci_new) >= 1 else 0 # 부등호제약조건 잔차(위반)
-        r_grad_L = np.linalg.norm(grad_L_new, ord=np.inf) # ∇L_A 수준
+        r_grad_L = np.linalg.norm(grad_L_new, ord=np.inf) # ∇L 수준
         r_step = np.linalg.norm(x_new - x_cur) # x_new - x_cur 거리
 
         # Convergence check for Outer loop
         if ((r_ce <= tol_eq_final) & # 등호제약조건 위반이 충분히 작고
             (r_ci <= tol_ineq_final) & # 부등호제약조건 위반도 충분히 작고
-            (r_grad_L <= tol_opt_final) & # ∇L_A도 충분히 정칙점에 도달했고
+            (r_grad_L <= tol_opt_final) & # ∇L도 충분히 정칙점에 도달했고
             (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
             done = True # outer loop 종료 flag 마킹하자
         else:
@@ -983,7 +983,7 @@ def alm(f, ce, ci, x0, inner_opt, tol):
             rho = min(factor_rho*rho, rho_max) # 부등호제약조건 위반이 크다면 페널티 파라미터를 증가시키자
 
         # ---- tolerance update ----
-        # If 제약조건 잔차 ≈ 0 and ∇L_A ≈ 0 -> 제약조건 tolerance를 조금 더 빡세게 두자(감소시키자)
+        # If 제약조건 잔차 ≈ 0 and ∇L ≈ 0 -> 제약조건 tolerance를 조금 더 빡세게 두자(감소시키자)
         if (r_ce <= 0.3*tol_eq) & (r_ci <= 0.3*tol_ineq) & (r_grad_L <= 0.3*tau):
             tol_eq = max(tol_eq_final,   0.5*tol_eq)
             tol_ineq = max(tol_ineq_final, 0.5*tol_ineq)
@@ -1008,11 +1008,11 @@ def alm(f, ce, ci, x0, inner_opt, tol):
 
         if done:
             print(f'Outer loop converges at {k+1} iteration(s) !')
-            print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+            print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
             return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
         
     print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
-    print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+    print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
 ### Augmented Lagrangian Method(ALM) for SQP(Sequential Quadratic Programming)
@@ -1102,7 +1102,7 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
     list_nu = [nu]
 
     ### Outer loop begins
-    for k in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
+    for k in np.arange(100):
         x_cur = x_new # x_k
         # print(f'mu_{k} = {mu}')
         # print(f'rho_{k} = {rho}')
@@ -1186,8 +1186,6 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
             f"‖λ_ce_QPk‖ = {np.linalg.norm(lmbda):.2e}, "
             f"‖ν_ci_QPk‖ = {np.linalg.norm(nu):.2e}\n")
 
-        # print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
-
         list_x.append(x_new)
         list_f.append(f_new)
         list_grad.append(grad_L_new)
@@ -1197,12 +1195,8 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
         list_nu.append(nu)
 
         if done:
-            # print(f'Outer loop converges at {k+1} iteration(s) !')
-            # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
             return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
-        
-    # print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
-    # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
 def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):

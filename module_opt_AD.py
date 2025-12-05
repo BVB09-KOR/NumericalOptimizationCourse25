@@ -814,7 +814,7 @@ def alm(f, f_torch, ce, ce_torch, ci, ci_torch, x0, inner_opt, tol):
     list_nu = [nu]
 
     ### Outer loop begins
-    for k in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
+    for k in np.arange(100):
         x_cur = x_new # x_k
         print(f'mu_{k} = {mu}')
         print(f'rho_{k} = {rho}')
@@ -1013,7 +1013,7 @@ def alm4sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, lmbda0, nu0, inner_opt, 
     list_nu = [nu]
 
     ### Outer loop begins
-    for k in np.arange(100): # mu가 너무 커지면 Qk가 unstable해지기 때문에 어차피 finite한 iterations 내에서 쇼부를 봐야 한다.
+    for k in np.arange(100):
         x_cur = x_new # x_k
         # print(f'mu_{k} = {mu}')
         # print(f'rho_{k} = {rho}')
@@ -1108,9 +1108,6 @@ def alm4sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, lmbda0, nu0, inner_opt, 
             f"‖ci_QPk‖∞ = {r_ci:.2e}, "
             f"‖λ_ce_QPk‖ = {np.linalg.norm(lmbda):.2e}, "
             f"‖ν_ci_QPk‖ = {np.linalg.norm(nu):.2e}\n")
-
-        # print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
-
         list_x.append(x_new)
         list_f.append(f_new)
         list_grad.append(grad_L_new)
@@ -1120,12 +1117,8 @@ def alm4sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, lmbda0, nu0, inner_opt, 
         list_nu.append(nu)
 
         if done:
-            # print(f'Outer loop converges at {k+1} iteration(s) !')
-            # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
             return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
-        
-    # print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
-    # print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L_A(x*) = {grad_LA_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
 def sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
