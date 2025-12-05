@@ -7,7 +7,7 @@
 Unconstrained Optimization Algorithm
 1. Steepest Descent Method  
 2. Conjugate Gradient Method  
-3. Newton's Method  
+3. Newton's Method(only in module_opt.py)  
 4. Quasi Newton's Method - BFGS  
   
 Constrained Optimization Algorithm  
