@@ -1,6 +1,6 @@
-# 25.12.02
+# 25.12.04
 # 1. gradient 벡터 구하는 함수를 numpy 연산 함수가 아닌 torch 연산 함수를 인자로 받아 AD를 수행하는 함수로 수정(grad_ad)
-# 2. 이에 따라 모든 관련 함수는 torch 연산 함수를 추가 인자로 받는다. 사용자 또한 torch 연산 함수를 인자에 추가로 입력해주어야 한다.
+# 2. 이에 따라 모든 solver 및 내부 함수는 torch 연산 함수(*_torch)를 추가 인자로 받는다. 따라서 사용자가 torch 연산 함수를 solver 인자에 입력해주어야 한다.
 # 3. 그리고 alm, alm4sqp 내부 convergence criteria에 쓰이는 ∇L_A -> ∇L로 수정하였음 
 
 ############################################# Numerical Optimization 모듈(완성본 모음) #############################################
@@ -18,7 +18,7 @@ def grad_ad(f_torch, x):
     dfdx = x.grad.detach().numpy().astype(np.float64)
     return dfdx
 
-# --------------------------------------------------------------------------Search direction algorithms--------------------------------------------------------------
+# --------------------------------------------------------------------------Direction(p) search algorithms--------------------------------------------------------------
 ### Search direction using Steepest Descent Method - Scalar func / n-dim point x
 def search_direction_stp_descent(f_torch, x):
     p = -grad_ad(f_torch, x)
@@ -100,7 +100,7 @@ def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hess
 
     return p, hessian_inv_aprx
 
-# ---------------------------------------------------------------------------Step length search algorithms---------------------------------------------------------------
+# ---------------------------------------------------------------------------Step length(α) search algorithms---------------------------------------------------------------
 ### Step length search A) Backtracking algorithm - Scalar func / n-dim point x / n-dim grad_x / n-dim search direction p / curruent iteration k
 # backtracking 알고리즘, 더 포괄적으로 step size alpha를 찾는 line search algorithm은 반드시 함수가 명시적으로 주어져야 한다.
 # alpha를 찾기 위해서는 every alpha_try에서 function evaluation을 거쳐야 하기 때문이다.
@@ -220,6 +220,7 @@ def wolfe_strong_interpol(f, f_torch, x_cur, f_cur, grad_cur, p_cur, c2):
         alpha_try = 1e-3
     return max(min(alpha_try, 1.0), 1e-6)
 
+# Step length search algorithm for SQP
 def steplength_merit(k, mu, f, ce, ce_torch, ci, ci_torch, x_k, p_k, grad_f_k, B_k, lmbda_k, nu_k):
     
     ### mu(penalty parameter for l1 merit function) 선정
@@ -608,6 +609,9 @@ def quasi_newton_bfgs(f, f_torch, x0, tol):
     return list_x, list_f, list_grad
 
 # ----------------------------------------------------------------------------Main Optimization Algorithm(Constrained)-------------------------------------------------------------
+# ce(list) : Containing equality constraint functions
+# ci(list) : Containing inequality constraint functions
+
 ### Quadratic Penalty Method(QPM)
 # Heuristic method로서 penalty parameter(mu)를 키워가며 constraint를 잡는 전략
 # penalty parameter(mu)가 너무 커질 경우 inner loop subproblem이 ill-conditioned하게 되어 수렴 불안정.
@@ -1121,6 +1125,8 @@ def alm4sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, lmbda0, nu0, inner_opt, 
 
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
+### SQP(Sequential Quadratic Programming) using ALM as a QP_k solver
+# unconstrained_solver ⊂ ALM ⊂ SQP ... 3중 loop 구조여서 엄청 느림. 설계변수/제약함수 개수 많은 문제 풀 때 work poorly
 def sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
     '''
     Sequential Quadratic Programming(SQP) using ALM as an intermediate algorithm for solving QP subproblem.  
