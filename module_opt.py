@@ -681,7 +681,7 @@ def quasi_newton_bfgs(f, x0, tol):
 
     ############## Searching iterations
     ###### Update info of current point
-    for k in range(10000):
+    for k in range(1000):
         x_old = x_cur
         grad_old = grad_cur
         hessian_inv_aprx_old = hessian_inv_aprx_cur
@@ -715,7 +715,7 @@ def quasi_newton_bfgs(f, x0, tol):
         r_grad_f = np.linalg.norm(grad_new)
         r_step = np.linalg.norm(x_new - x_cur)
         if k >= 2:
-            if ((r_grad_f <= tol) | # ∇L_A도 충분히 정칙점에 도달했거나
+            if ((r_grad_f <= tol) and # ‖∇f‖도 충분히 정칙점에 도달했고
                 (r_step <= tol_step_final * (1.0 + np.linalg.norm(x_new)))): # x_new도 충분히 수렴했다면
                 print(f'‖∇f(x_{k+1})‖ : {r_grad_f} / tol_∇f : {tol} / ‖∆x_{k+1}‖ : {r_step} / tol_∆x : {tol_step_final}')
                 break # iteration 종료하자
@@ -944,10 +944,8 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         ci_new = np.array([ci_j(x_new) for ci_j in ci])
 
         # --- multiplier updates (AFTER computing ce_new, ci_new) ---
-        if len(ce) >= 1:
-            lmbda = lmbda - mu * ce_new
-        if len(ci) >= 1:
-            nu = np.maximum(nu - rho * ci_new, 0.0)
+        lmbda = lmbda - mu * ce_new
+        nu = np.maximum(nu - rho * ci_new, 0.0)
 
         grad_f_new = grad_centraldiff(f, x_new)
         sum_lmbdaxgrad_ce_new = np.array([lmbda_j*grad_centraldiff(ce_j, x_new) for lmbda_j, ce_j in zip(lmbda, ce)]).sum(axis=0)
@@ -959,8 +957,8 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         grad_L_new = grad_f_new - sum_lmbdaxgrad_ce_new - sum_nuxgrad_ci_new
 
         # residual(잔차) 계산
-        r_ce = np.max(np.abs(ce_new)) if len(ce_new) >= 1 else 0 # 등호제약조건 잔차(위반)
-        r_ci = np.max(np.maximum(-ci_new, 0)) if len(ci_new) >= 1 else 0 # 부등호제약조건 잔차(위반)
+        r_ce = np.max(np.abs(ce_new)) # 등호제약조건 잔차(위반)
+        r_ci = np.max(np.maximum(-ci_new, 0)) # 부등호제약조건 잔차(위반)
         r_grad_L = np.linalg.norm(grad_L_new, ord=np.inf) # ∇L 수준
         r_step = np.linalg.norm(x_new - x_cur) # x_new - x_cur 거리
 
@@ -998,6 +996,8 @@ def alm(f, ce, ci, x0, inner_opt, tol):
         # ---------------------------------------- print log ----------------------------------------
         print(f'{k+1}-th outer loop : Inner loop converges at {len(log_inner[0]) - 1} iteration(s) ...')
         print(f'|x_{k+1} - x_{k}| = {r_step}')
+        print(f'f(x_{k+1}) = {f_new}')
+        print(f'|∇L(x_{k+1})| = {r_grad_L}')
         print(f'Max violation of equality constraints : {r_ce}')
         print(f'Max violation of inequality constraints : {r_ci}')
         print(f'\n------------------------------------------------------------- Outer loop ----------------------------------------------------------------\n')
@@ -1126,10 +1126,8 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
         ci_new = np.array([ci_j(x_new) for ci_j in ci])
 
         # --- multiplier updates (AFTER computing ce_new, ci_new) ---
-        if len(ce) >= 1:
-            lmbda = lmbda - mu * ce_new
-        if len(ci) >= 1:
-            nu = np.maximum(nu - rho * ci_new, 0.0)
+        lmbda = lmbda - mu * ce_new
+        nu = np.maximum(nu - rho * ci_new, 0.0)
 
         grad_f_new = grad_centraldiff(f, x_new)
         sum_lmbdaxgrad_ce_new = np.array([lmbda_j*grad_centraldiff(ce_j, x_new) for lmbda_j, ce_j in zip(lmbda, ce)]).sum(axis=0)
@@ -1182,7 +1180,7 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
         x_str = ", ".join([f"{xi:.8f}" for xi in x_new])
         print("\n log - ALM")
         print(f"‖∆p‖ = {r_step:.2e}, "
-            f"p{k+1:02d} = [{x_str}] | "
+            f"p{k+1:02d} = [{x_str}] | \n"
             f"Q_QPk = {f_new:.4e}, "
             f"‖∇L‖ = {r_grad_L:.2e}, "
             f"‖ce_QPk‖∞ = {r_ce:.2e}, "
@@ -1205,7 +1203,7 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
 
 ### SQP(Sequential Quadratic Programming) using ALM as a QP_k solver
 # unconstrained_solver ⊂ ALM ⊂ SQP ... 3중 loop 구조여서 엄청 느림. 설계변수/제약함수 개수 많은 문제 풀 때 work poorly
-def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
+def sqp(f, ce, ci, x0, maxiter=100, inner_opt=3, tol=1e-6, tol_inter=1e-4):
     '''
     Sequential Quadratic Programming(SQP) using ALM as an intermediate algorithm for solving QP subproblem.  
     It works well for inequality constrained opt prblm, but not for equality constrained opt prblm.  
@@ -1381,8 +1379,8 @@ def sqp(f, ce, ci, x0, inner_opt=3, tol=1e-6, tol_inter=1e-4):
         # 현황 확인
         x_str = ", ".join([f"{xi:.8f}" for xi in x_new])
         print("\n log - SQP")
-        print(f"‖∆x‖ = {r_step:.2e}, "
-            f"x{k+1:02d} = [{x_str}] | "
+        print(f"x{k+1:02d} = [{x_str}] \n"
+            f"‖∆x‖ = {r_step:.2e}, "
             f"f = {f_new:.4e}, "
             f"‖∇L‖ = {r_grad_L:.2e}, "
             f"‖ce‖∞ = {r_ce:.2e}, "
