@@ -10,10 +10,10 @@ Users simply define a single scalar objective function and list of equality/ineq
 ---------------------------------------------------------------------------------------------------
 
 Unconstrained Optimization Solver  
-1. Steepest Descent Method  
-2. Conjugate Gradient Method  
-3. Newton's Method(only in module_opt.py)  
-4. Quasi Newton's Method - BFGS
+1. Steepest Descent Method : stp_descent(f, x0, tol)  
+2. Conjugate Gradient Method : cg_hs(f, x0, tol) / cg_fr(f, x0, tol)  
+3. Newton's Method(only in module_opt.py) : newton(f, x0, tol)  
+4. Quasi Newton's Method - BFGS : quasi_newton_bfgs(f, x0, tol)  
 
  - Test results.  
    - module_opt_unconstrained_test.ipynb  
@@ -22,13 +22,13 @@ Unconstrained Optimization Solver
 ---------------------------------------------------------------------------------------------------
 
 Constrained Optimization Solver  
-1. Quadratic Penalty Method(QPM)  
-2. Augmented Lagrangian Method(ALM)
+1. Quadratic Penalty Method(QPM) : qpm(f, ce, ci, x0, inner_opt, tol)  
+2. Augmented Lagrangian Method(ALM) : alm(f, ce, ci, x0, inner_opt, tol)  
    1) ALM builds up unconstrained opt problem based on augmented Lagrangian function of original constrained opt problem at each k-th iteration
    2) Each unconstrained opt problem is solved using unconstrained optimizer 
-4. Sequential Quadratic Programming(with ALM)
+4. Sequential Quadratic Programming(with ALM) : sqp(f, ce, ci, x0, maxiter=100, inner_opt=3, tol=1e-6, tol_inter=1e-4)  
    1) SQP loop builds up Quadratic Programming subproblem(QPk) at each k-th iteration  
-   2) QPk is solved using ALM  
+   2) QPk is solved using alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol)  
   
  - Test results.  
    - sqp_test_important.ipynb
