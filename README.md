@@ -9,7 +9,7 @@ Users simply define a single scalar objective function and list of equality/ineq
 
 ---------------------------------------------------------------------------------------------------
 
-Unconstrained Optimizer  
+Unconstrained Optimization Solver  
 1. Steepest Descent Method  
 2. Conjugate Gradient Method  
 3. Newton's Method(only in module_opt.py)  
@@ -21,7 +21,7 @@ Unconstrained Optimizer
 
 ---------------------------------------------------------------------------------------------------
 
-Constrained Optimizer  
+Constrained Optimization Solver  
 1. Quadratic Penalty Method(QPM)  
 2. Augmented Lagrangian Method(ALM)
    1) ALM builds up unconstrained opt problem based on augmented Lagrangian function of original constrained opt problem at each k-th iteration
