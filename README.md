@@ -31,8 +31,8 @@ Constrained Optimizer
    2) QPk is solved using ALM  
   
  - Test results.  
-  - sqp_test_important.ipynb
-  - assignment3.ipynb
-  - assignment3_AD.ipynb
-  - assignment5_*.ipynb ... refer to the assignment_5 pdf file.  
+   - sqp_test_important.ipynb
+   - assignment3.ipynb
+   - assignment3_AD.ipynb
+   - assignment5_*.ipynb ... refer to the assignment_5 pdf file.  
 
