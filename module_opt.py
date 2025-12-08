@@ -135,7 +135,7 @@ def search_direction_quasi_newton_bfgs(k, x_old, x_cur, grad_old, grad_cur, hess
         else:
             I = np.eye(dim_x)
             rho = 1.0 / dgdx
-            V = I - rho * np.outer(dx, dg) # 벡터로 행렬 생성 연산은 @ 연산 쓰지 말고 대신 np.outer(a, b) 함수 써라.
+            V = I - rho * (dx.reshape(-1, 1) @ dg.reshape(1, -1)) # 벡터로 행렬 생성 연산은 @ 연산 쓰지 말고 대신 np.outer(a, b) 함수 써라.
             hessian_inv_aprx = V @ hessian_inv_aprx_old @ V.T + rho * np.outer(dx, dx) # BFGS formula
 
     p = -hessian_inv_aprx @ grad_cur
@@ -208,6 +208,7 @@ def bracketing_alpha(f, x_cur, p_cur, c2_dphi0, phi_armijo, alpha_lo, alpha_hi):
         else:
             if abs(dphi_new) <= c2_dphi0: # alpha_new에서의 함수값이 감소했고 기울기까지 작다
                 alpha_optm = alpha_new # alpha_new가 alpha_optm
+                print(f'α* satisfying strong Wolfe\'s condition !')
                 return alpha_optm
             elif dphi_new > 0: # alpha_new에서의 함수값이 감소했는데 기울기는 여전히 양수다
                 alpha_hi = alpha_new # alpha_optm은 alpha_lo와 alpha_new 사이 존재 -> '작은' 골짜기 구간 [alpha_lo, alpha_new]로 업뎃
@@ -220,7 +221,7 @@ def bracketing_alpha(f, x_cur, p_cur, c2_dphi0, phi_armijo, alpha_lo, alpha_hi):
         
         if abs(alpha_hi - alpha_lo) < 1e-8: # 만약 구간이 충분히 줄어들었으면 그냥 탈출해서 구간의 절반지점을 alpha_optm으로 return
             break
-    
+    print(f'α* not satisfying strong Wolfe\'s condition !')
     return 0.5*(alpha_lo + alpha_hi)
 
 # wolfe_strong_interpol - 확실한 '큰' 골짜기 구간을 찾아 거기서 alpha_optm을 찾는 함수
@@ -250,6 +251,7 @@ def wolfe_strong_interpol(f, x_cur, f_cur, grad_cur, p_cur, c2):
 
         elif abs(dphi_try) <= -c2*dphi0: # phi_try가 충분히 작고 기울기까지 작다면
             alpha_optm = alpha_try # 그 점이 alph_optm이다
+            print(f'α* satisfying strong Wolfe\'s condition !')
             return alpha_optm
 
         elif dphi_try >= 0: # phi_try가 충분히 작긴 한데 기울기가 양수라면 더 작은 phi 값을 가지는 alpha_optm이 alpha_try_old와 alpha_try 사이 존재
@@ -263,13 +265,14 @@ def wolfe_strong_interpol(f, x_cur, f_cur, grad_cur, p_cur, c2):
     
     if not np.isfinite(alpha_try):
         alpha_try = 1e-3
+    print(f'α* not satisfying strong Wolfe\'s condition !')
     return max(min(alpha_try, 1.0), 1e-6)
 
 # Step length search algorithm for SQP
 def steplength_merit(k, mu, f, ce, ci, x_k, p_k, grad_f_k, B_k, lmbda_k, nu_k):
-    
     ### mu(penalty parameter for l1 merit function) 선정
     ## mu 구하는 버전 1 : 강의자료(Coursenotes)의 3.3.5의 마지막 formula
+    print(f'Step length search using l1 merit function ... ')
     pBp = p_k @ (B_k @ p_k)
     sum_c = sum([abs(ce_j(x_k)) for ce_j in ce]) + sum([np.maximum(-ci_j(x_k), 0) for ci_j in ci]) # sum of the constraints violation
     max_lm = max(max(abs(lmbda_k)), max(abs(nu_k))) # maximum lagrange multiplier
@@ -720,12 +723,12 @@ def quasi_newton_bfgs(f, x0, tol):
                 print(f'‖∇f(x_{k+1})‖ : {r_grad_f} / tol_∇f : {tol} / ‖∆x_{k+1}‖ : {r_step} / tol_∆x : {tol_step_final}')
                 break # iteration 종료하자
         print("BFGS")
-        print(f'x_{k+1} : {x_new}')
+        # print(f'x_{k+1} : {x_new}')
         print(f'f_{k+1} : {f_new}')
         print(f'‖∇f(x_{k+1})‖ : {r_grad_f}')
         print(f'‖∆x_{k+1}‖ : {r_step}')
         print(f'recent alpha : {alpha_cur}')
-        print(f'recent p : {p_cur}')
+        # print(f'recent p : {p_cur}')
         print()
 
     print(f'BFGS \n Optimization converges -> Iteration : {k+1} / x* : {x_new} / f(x*) : {f_new} / ‖∇f(x*)‖ : {r_grad_f} ‖∆x*‖ : {r_step} \n')
@@ -1120,6 +1123,7 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
         LA_cur = lambda x : f(x) + penalty_ce(x) + penalty_ci(x) # augmented lagrangian function LAk at x_k
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             log_inner = inner_opt(LA_cur, x_cur, tau) # solving ∇LAk(x*_k) ≤ tau_k ; Inner loop
+        # log_inner = inner_opt(LA_cur, x_cur, tau) # 디버깅용
         x_new = log_inner[0][-1]
         f_new = f(x_new)
         ce_new = np.array([ce_j(x_new) for ce_j in ce])
