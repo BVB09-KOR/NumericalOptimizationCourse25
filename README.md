@@ -22,8 +22,8 @@ Users simply define a single scalar objective function and list of equality/ineq
    1) The output of QNM contains log of $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
 
  - Test results.  
-   - module_opt_unconstrained_test.ipynb  
-   - module_opt_unconstrained_AD_test.ipynb  
+   - `module_opt_unconstrained_test.ipynb`  
+   - `module_opt_unconstrained_AD_test.ipynb`  
 
 ---------------------------------------------------------------------------------------------------
 
@@ -42,8 +42,8 @@ Users simply define a single scalar objective function and list of equality/ineq
    4) The output of SQP contains log of $x_k, \quad f\(x_k\), \quad ∇f\(x_k\), \quad ∇L\(x_k\), \quad max\(|c_e\(x_k\)|\), \quad max\(|c_i\(x_k\)|\), \quad \lambda_k, \quad \nu_k$  
   
  - Test results.  
-   - sqp_test_important.ipynb
-   - assignment3.ipynb
-   - assignment3_AD.ipynb
-   - assignment5_*.ipynb ... refer to the assignment_5 pdf file.  
+   - `sqp_test_important.ipynb`  
+   - `assignment3.ipynb`  
+   - `assignment3_AD.ipynb`  
+   - `assignment5_*.ipynb` ... refer to the assignment_5 pdf file.  
 
