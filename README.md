@@ -1,5 +1,5 @@
-## For Numerical Optimization Course(MECH 579) 2025 Fall Semester, Mech Eng, McGill  
-### Line Search and Gradient Based Multivariate Optimization(Unconstrained & Constrained)  
+# For Numerical Optimization Course(MECH 579) 2025 Fall Semester, Mech Eng, McGill  
+## Line Search and Gradient Based Multivariate Optimization(Unconstrained & Constrained)  
 
 Each unconstrained/constrained optimizer is used as a function from module_opt.py(or module_opt_AD.py)  
 Users simply define a single scalar objective function and list of equality/inequality constraint functions and provide them as input arguments to desired optimizer with proper initial guess point x0(convergence tolerance is supplementary).  
@@ -11,7 +11,7 @@ Users simply define a single scalar objective function and list of equality/ineq
 
 ---------------------------------------------------------------------------------------------------
 
-Unconstrained Optimization Solver  
+### Unconstrained Optimization Solver  
 1. Steepest Descent Method(SDM) : stp_descent(f, x0, tol)  
    1) The output of SDM contains log of $x_k, f\(x_k\), ∇f\(x_k\)$  
 3. Conjugate Gradient Method(CGM) : cg_hs(f, x0, tol) / cg_fr(f, x0, tol)
@@ -27,7 +27,7 @@ Unconstrained Optimization Solver
 
 ---------------------------------------------------------------------------------------------------
 
-Constrained Optimization Solver  
+### Constrained Optimization Solver  
 1. Quadratic Penalty Method(QPM) : qpm(f, ce, ci, x0, inner_opt, tol)  
    1) The output of QPM contains log of $x_k, f\(x_k\), ∇f\(x_k\), max\(|c_e\(x_k\)|\), max\(|c_i\(x_k\)|\)$  
 3. Augmented Lagrangian Method(ALM) : alm(f, ce, ci, x0, inner_opt, tol)  
