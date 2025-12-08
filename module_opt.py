@@ -840,6 +840,8 @@ def qpm(f, ce, ci, x0, inner_opt, tol):
             print(f'Outer loop converged at {j+1} iteration(s) !')
             print(f'iter = {j+1} x* = {x_new}, f(x*) = {f(x_new)}, |ce(x*)|₁ = {np.sum(np.abs(ce_new))}, |ci(x*)|₁ = {np.sum(np.abs(ci_new))}')
             return list_x, list_f, list_grad_f, list_ce, list_ci
+    else:
+        return list_x, list_f, list_grad_f, list_ce, list_ci
 
 ### Augmented Lagrangian Method(ALM)
 # KKT conditions based on Lagrangian function 개념을 활용하여 비교적 작은 penalty method(mu, rho)로도 안정적 수렴 가능.
@@ -1015,16 +1017,25 @@ def alm(f, ce, ci, x0, inner_opt, tol):
 
         if done:
             print(f'Outer loop converges at {k+1} iteration(s) !')
-            print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+            print(f'iter = {k+1} x* = {x_new}, f(x*) = {f_new}, |∇L(x*)| = {r_grad_L}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
             return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
         
     print(f'Outer loop terminates at {k+1}(max) iteration(s) !')
-    print(f'iter = {k+1} x* = {x_new}, f(x*) = {f(x_new)}, ∇L(x*) = {grad_L_new}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
+    print(f'iter = {k+1} x* = {x_new}, f(x*) = {f_new}, |∇L(x*)| = {r_grad_L}, max(ce(x*)) = {r_ce}, max(ci(x*)) = {r_ci}')
     return list_x, list_f, list_grad, list_ce, list_ci, list_lmbda, list_nu
 
 ### Augmented Lagrangian Method(ALM) for SQP(Sequential Quadratic Programming)
 # SQP 알고리즘의 내부(중간) 알고리즘으로 사용하고자 따로 만듦. 구조는 위의 ALM이랑 동일
 def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조금 다르게 sqp의 outer iteration으로부터 lmbda0와 nu0를 받음
+    '''
+    alm4sqp solves QP_k for p_k* which makes x_k+1 = x_k + α_k*p_k*
+    f : Quadratic objective function of QP_k
+    ce : Linear equlaity constraint function of QP_k
+    ci : Linear inequlaity constraint function of QP_k
+    x0 : Initial guess of search direction(pk_0) that QP_k tries to find out.
+    lmbda0 : Initial guess of Lagrange multipliers for ce.
+    nu0 : Initial guess of Lagrange multipliers for ci.
+    '''
     ### Check input data type
     if (not isinstance(ce, list)) | (not isinstance(ci, list)) | (len(ci) + len(ce) == 0):
         raise ValueError('Please input at least either one equality or inequality constraint as list type ! ; Empty list is OK as well.')
