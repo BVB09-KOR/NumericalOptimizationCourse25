@@ -31,7 +31,7 @@ Constrained Optimization Solver
 4. Sequential Quadratic Programming(with ALM) : sqp(f, ce, ci, x0, maxiter=100, inner_opt=3, tol=1e-6, tol_inter=1e-4)  
    1) SQP loop builds up Quadratic Programming subproblem(QPk) at each k-th iteration  
    2) QPk is solved using alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol)
-   3) The outputs contain log of $x_k$ $f\(x_k\), ∇f\(x_k\), max\(c_e\(x_k\)\) violation of equality/inequality constraint functions$
+   3) The outputs contain log of $\mathbf{x}_k, f\(x_k\), ∇f\(x_k\), max\(c_e\(x_k\)\) violation of equality/inequality constraint functions$
   
  - Test results.  
    - sqp_test_important.ipynb
