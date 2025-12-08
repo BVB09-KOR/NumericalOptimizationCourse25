@@ -40,7 +40,7 @@ Users simply define a single scalar objective function and list of equality/ineq
    2) Each unconstrained opt problem is solved using unconstrained optimizer  
    3) The output of ALM contains log of  
       $x_k, \quad f\(x_k\), \quad ∇L\(x_k\), \quad max\(|c_e\(x_k\)|\), \quad max\(|c_i\(x_k\)|\), \quad\\lambda_k, \quad \\nu_k$  
-4. Sequential Quadratic Programming(with ALM)  
+4. Sequential Quadratic Programming(SQP)  
    : `sqp(f, ce, ci, x0, maxiter=100, inner_opt=3, tol=1e-6, tol_inter=1e-4)`  
    1) SQP loop builds up Quadratic Programming subproblem(QPk) at each k-th iteration  
    2) QPk is solved using `alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol)`  
