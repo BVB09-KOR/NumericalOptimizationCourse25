@@ -32,6 +32,6 @@ Constrained Optimizer
  - Test results.  
 sqp_test_important.ipynb  
 assignment3.ipynb  
-assignment3_AD.ipynb
-assignment5_*.ipynb ... refer to the assignment_5 pdf file.
+assignment3_AD.ipynb  
+assignment5_*.ipynb ... refer to the assignment_5 pdf file.  
 
