@@ -1,4 +1,4 @@
-## For Numerical Optimization Course 2025 Fall Semester  
+## For Numerical Optimization Course(MECH 579) 2025 Fall Semester, Mech Eng, McGill  
 ### Gradient Based Multivariate Optimization(Unconstrained & Constrained)  
 
 Each unconstrained/constrained optimizer is used as a function from module_opt.py(or module_opt_AD.py)  
