@@ -3,8 +3,8 @@
 
 Each unconstrained/constrained optimizer is used as a function from module_opt.py(or module_opt_AD.py)  
 Users simply define a single scalar objective function and list of equality/inequality constraint functions and provide them as input arguments to desired optimizer with proper initial guess point x0(convergence tolerance is supplementary).  
- - module_opt.py ... Finite Difference based Gradient Calculation  
- - module_opt_AD.py ... Automatic Differentiation(provided by PyTorch) based Gradient Calculation
+ - module_opt.py ... Module containing Optimization Functions using Finite Difference based Gradient Calculation  
+ - module_opt_AD.py ... Module containing Optimization Functions using Automatic Differentiation(provided by PyTorch) based Gradient Calculation
    - You should provide two types of functions as input argument, one with only numpy operations and another with only torch operations(treat only torch.Tensor datatype as input and output) when using each optimizer  
 
 ---------------------------------------------------------------------------------------------------
