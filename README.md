@@ -16,8 +16,8 @@ Unconstrained Optimizer
 4. Quasi Newton's Method - BFGS
 
  - Test results.  
-module_opt_unconstrained_test.ipynb  
-module_opt_unconstrained_AD_test.ipynb  
+   - module_opt_unconstrained_test.ipynb  
+   - module_opt_unconstrained_AD_test.ipynb  
 
 ---------------------------------------------------------------------------------------------------
 
@@ -31,8 +31,8 @@ Constrained Optimizer
    2) QPk is solved using ALM  
   
  - Test results.  
-sqp_test_important.ipynb  
-assignment3.ipynb  
-assignment3_AD.ipynb  
-assignment5_*.ipynb ... refer to the assignment_5 pdf file.  
+  - sqp_test_important.ipynb
+  - assignment3.ipynb
+  - assignment3_AD.ipynb
+  - assignment5_*.ipynb ... refer to the assignment_5 pdf file.  
 
