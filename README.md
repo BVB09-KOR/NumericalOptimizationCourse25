@@ -13,13 +13,17 @@ Users simply define a single scalar objective function and list of equality/ineq
 
 ### Unconstrained Optimization Solver  
 1. Steepest Descent Method(SDM) : `stp_descent(f, x0, tol)`  
-   1) The output of SDM contains log of $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
+   1) The output of SDM contains log of
+      $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
 3. Conjugate Gradient Method(CGM) : `cg_hs(f, x0, tol)` / `cg_fr(f, x0, tol)`  
-   1) The output of CGM contains log of $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
+   1) The output of CGM contains log of  
+      $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
 5. Newton's Method(only in module_opt.py) : `newton(f, x0, tol)`  
-   1) The output of Newton's Method contains log of $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
+   1) The output of Newton's Method contains log of
+      $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
 7. Quasi Newton's Method(QNM) - BFGS : `quasi_newton_bfgs(f, x0, tol)`  
-   1) The output of QNM contains log of $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
+   1) The output of QNM contains log of
+      $x_k, \quad f\(x_k\), \quad ∇f\(x_k\)$  
 
  - Test results.  
    - `module_opt_unconstrained_test.ipynb`  
