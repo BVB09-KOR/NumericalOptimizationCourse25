@@ -1145,8 +1145,6 @@ def alm4sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, lmbda0, nu0, inner_opt, 
 def sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, maxiter=100, inner_opt=3, tol=1e-6, tol_inter=1e-4):
     '''
     Sequential Quadratic Programming(SQP) using ALM as an intermediate algorithm for solving QP subproblem.  
-    It works well for inequality constrained opt prblm, but not for equality constrained opt prblm.  
-    (I don't know why. Contrary to SQP, both QPM/ALM work well for both type of constrained opt prblms.)
 
     Args:
         f (callable) : objective function(output \: single scalar)
@@ -1171,9 +1169,10 @@ def sqp(f, f_torch, ce, ce_torch, ci, ci_torch, x0, maxiter=100, inner_opt=3, to
         log (list[list]) : Optimization log containing:
          - list_x (list) : Solution log
          - list_f (list) : Final objective value log
+         - list_grad_f (list) : Gradient of obj function log
          - list_grad_L (list) : Gradient of Lagrangian log
-         - list_ce (list) : Equality constraint value log
-         - list_ci (list) : Inequality constraint value log
+         - list_ce (list) : Maximum violation of equality constraint value log
+         - list_ci (list) : Maximum violation of inequality constraint value log
          - list_lmbda (list) : Lagrange multipliers for equality constraints log
          - list_nu (list) : Lagrange multipliers for inequality constraints log
     '''

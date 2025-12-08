@@ -1221,28 +1221,34 @@ def alm4sqp(f, ce, ci, x0, lmbda0, nu0, inner_opt, tol): # 그냥 alm과는 조�
 def sqp(f, ce, ci, x0, maxiter=100, inner_opt=3, tol=1e-6, tol_inter=1e-4):
     '''
     Sequential Quadratic Programming(SQP) using ALM as an intermediate algorithm for solving QP subproblem.  
-    It works well for inequality constrained opt prblm, but not for equality constrained opt prblm.  
-    (I don't know why. Contrary to SQP, both QPM/ALM work well for both type of constrained opt prblms.)
 
     Args:
         f (callable) : objective function(output \: single scalar)
         ce (list[callable]) : Equality constraint functions
         ci (list[callable]) : Inequality constraint functions
-        x0 (1D ndarray) : Initial guess(# of it should be same with input variables of f)
-        inner_opt (int, optional) : Inner optimizer for ALM(default \: 3)  
+        x0 (1D ndarray) : Initial guess(# of it should be same wi
+        th input variables of f)
+        inner_opt (int, optional) : Inner optimizer for ALM(defau
+        lt \: 3)  
             (0 \: SDM 1 \: CGM_HS 2 \: CGM_FR 3 \: BFGS)
-        tol (float, optional) : Convergence tolerance ε for outer iteration(SQP).  
+
+        tol (float, optional) : Convergence tolerance ε for outer
+         iteration(SQP).  
             ∇L_k < ε (k \: iteration of SQP)
-        tol_inter (float, optional) : Convergence tolerance ε for intermediate iteration(ALM).  
+
+        tol_inter (float, optional) : Convergence tolerance ε for
+         intermediate iteration(ALM).  
             ∇L_A_j < ε (j \: iteration of ALM)
+
 
     Returns:
         log (list[list]) : Optimization log containing:
          - list_x (list) : Solution log
          - list_f (list) : Final objective value log
+         - list_grad_f (list) : Gradient of obj function log
          - list_grad_L (list) : Gradient of Lagrangian log
-         - list_ce (list) : Equality constraint value log
-         - list_ci (list) : Inequality constraint value log
+         - list_ce (list) : Maximum violation of equality constraint value log
+         - list_ci (list) : Maximum violation of inequality constraint value log
          - list_lmbda (list) : Lagrange multipliers for equality constraints log
          - list_nu (list) : Lagrange multipliers for inequality constraints log
     '''
